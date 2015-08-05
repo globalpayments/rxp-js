@@ -1,4 +1,4 @@
-/*! rxp-js - v1.0.0 - 2015-07-30
+/*! rxp-js - v1.0.0 - 2015-07-31
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -339,7 +339,7 @@ var RealexRemote = (function() {
     };
 
     /*
-     * Validate Card Holder Name. Returns true if card numebr valid. Only allows
+     * Validate Card Holder Name. Returns true if card holder valid. Only allows
      * non-empty ISO/IEC 8859-1 values 100 characters or less.
      */
     var validateCardHolderName = function(cardHolderName) {
