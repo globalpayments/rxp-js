@@ -8,15 +8,15 @@ describe( 'rxp-remote library', function () {
      */
     describe( 'card validation (validateCardNumber)', function () {
         it('valid card', function () {
-            expect(RealexRemote.validateCardNumber('42424242424242424242')).toBe(true);
+            expect(RealexRemote.validateCardNumber('424242424242424242')).toBe(true);
         });
 
         it('non-numeric card', function () {
-            expect(RealexRemote.validateCardNumber('a2424242424242424242')).toBe(false);
+            expect(RealexRemote.validateCardNumber('a24242424242424242')).toBe(false);
         }); 
 
         it('card with spaces', function () {
-            expect(RealexRemote.validateCardNumber('4242 4242424242424242')).toBe(false);
+            expect(RealexRemote.validateCardNumber('4242 424242424242')).toBe(false);
         }); 
 
         it('empty card', function () {
@@ -31,24 +31,24 @@ describe( 'rxp-remote library', function () {
             expect(RealexRemote.validateCardNumber('  ')).toBe(false);
         });
         
-        it('length < 14', function () {
-            expect(RealexRemote.validateCardNumber('1111111111112')).toBe(false);
+        it('length < 12', function () {
+            expect(RealexRemote.validateCardNumber('42424242420')).toBe(false);
         });
         
-        it('length > 23', function () {
-            expect(RealexRemote.validateCardNumber('242424242424242424242402')).toBe(false);
+        it('length > 19', function () {
+            expect(RealexRemote.validateCardNumber('42424242424242424242')).toBe(false);
         });
         
-        it('length = 14', function () {
-            expect(RealexRemote.validateCardNumber('11111111111110')).toBe(true);
+        it('length = 12', function () {
+            expect(RealexRemote.validateCardNumber('424242424242')).toBe(true);
         });
         
-        it('length = 23', function () {
-            expect(RealexRemote.validateCardNumber('24242424242424242424240')).toBe(true);
+        it('length = 19', function () {
+            expect(RealexRemote.validateCardNumber('4242424242424242428')).toBe(true);
         });
 
         it('luhn check', function () {
-            expect(RealexRemote.validateCardNumber('42424242424242424241')).toBe(false);
+            expect(RealexRemote.validateCardNumber('4242424242424242427')).toBe(false);
         });      
     });
     

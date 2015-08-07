@@ -1,4 +1,4 @@
-/*! rxp-js - v1.0.0 - 2015-07-31
+/*! rxp-js - v1.0.0 - 2015-08-07
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -301,12 +301,12 @@ var RealexRemote = (function() {
 
     /*
      * Validate Card Number. Returns true if card number valid. Only allows
-     * non-empty numeric values between 14 and 23 characters. A Luhn check is
+     * non-empty numeric values between 12 and 19 characters. A Luhn check is
      * also run against the card number.
      */
     var validateCardNumber = function(cardNumber) {
-        // test numeric and length between 14 and 23
-        if (!/^\d{14,23}$/.test(cardNumber)) {
+        // test numeric and length between 12 and 19
+        if (!/^\d{12,19}$/.test(cardNumber)) {
             return false;
         }
 
