@@ -1,0 +1,33 @@
+{
+  "name": "rxp-js",
+  "description": "The official Realex Payments JS SDK",
+  "version": "1.0.0",
+  "homepage": "https://github.com/realexpayments/rxp-js",
+  "author": {
+    "name": "Realex Developer",
+    "url": "http://www.realexpayments.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realexpayments/rxp-js"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/realexpayments/rxp-js/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/rxp-js",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-jasmine": "^0.9.0",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-uglify": "~0.2.0",
+    "grunt-contrib-watch": "~0.4.0"
+  },
+  "keywords": []
+}
