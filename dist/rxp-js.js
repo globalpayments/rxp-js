@@ -1,4 +1,4 @@
-/*! rxp-js - v1.0.1 - 2015-08-17
+/*! rxp-js - v1.1.0 - 2015-08-17
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
