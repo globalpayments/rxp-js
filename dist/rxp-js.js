@@ -1,9 +1,8 @@
-/*! rxp-js - v1.1.0 - 2015-08-17
+/*! rxp-js - v1.1.1 - 2015-09-25
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
  */
-/*jslint browser:true */
 var RealexHpp = (function() {
 
 	'use strict';
@@ -15,6 +14,10 @@ var RealexHpp = (function() {
 	var setHppUrl = function(url) {
 		hppUrl = url;
 	};
+	
+	var isMobileXS =  ( (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= 360 ? true : false) || (((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= 360 ? true : false)) ;
+	var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 	
 	// Initialising some variables used throughout this file.
 	var RxpLightbox = (function() {
@@ -28,10 +31,27 @@ var RealexHpp = (function() {
 			var closeButton;
 			
 			var token;
-
+			
+			function checkDevicesOrientation(){
+				if(window.orientation === 90 || window.orientation === -90){
+					return true;
+				}else{
+					return false;
+				}
+			}
+			
+			var isLandscape = checkDevicesOrientation();
+			
+			if(isIOS && isMobileXS || isMobileXS){
+				if(window.addEventListener){
+					window.addEventListener("orientationchange", function() {
+						isLandscape = checkDevicesOrientation();
+					}, false);
+				}
+			}
+			
 			// Initialising some variables used throughout this function.
 			function createOverlay() {
-
 				var overlay = document.createElement("div");
 				overlay.setAttribute("id", "rxp-overlay-" + randomId);
 				overlay.style.position="fixed";
@@ -41,6 +61,13 @@ var RealexHpp = (function() {
 				overlay.style.left="0";
 				overlay.style.transition="all 0.3s ease-in-out";
 				overlay.style.zIndex="100"; 
+				
+				if(isIOS && isMobileXS){
+					overlay.style.position="absolute !important";
+					overlay.style.WebkitOverflowScrolling = "touch";
+					overlay.style.overflowX = "hidden";
+					overlay.style.overflowY = "scroll";
+				}
 				
 				document.body.appendChild(overlay);
 
@@ -63,6 +90,21 @@ var RealexHpp = (function() {
 						closeButton.style.opacity = "1";
 					},500);
 					
+					if(isIOS && isMobileXS || isMobileXS){
+						closeButton.style.position = "absolute";
+						closeButton.style.float = "right";
+						closeButton.style.top = "20px";
+						closeButton.style.left = "initial";
+						closeButton.style.marginLeft = "0px";
+						if(isMobileXS && isLandscape){
+							closeButton.style.right = "15% !important";
+						}else{
+							closeButton.style.right = "20px";
+						}
+					}
+					
+					
+					
 					closeButton.addEventListener("click", closeModal, true);
 					overlayElement.appendChild(closeButton);
 				}
@@ -84,6 +126,7 @@ var RealexHpp = (function() {
 				spinner.style.marginLeft="-15px";
 				spinner.style.top="120px";
 				
+				
 				document.body.appendChild(spinner);
 
 				//Create the iframe
@@ -96,9 +139,7 @@ var RealexHpp = (function() {
 
 				iFrame.setAttribute("seamless", "seamless");
 				
-				iFrame.style.top="40px";
-				iFrame.style.left="50%";
-				iFrame.style.marginLeft="-180px";
+				
 				iFrame.style.zIndex="10001";
 				iFrame.style.position="absolute";
 				iFrame.style.transition="transform 0.5s ease-in-out";
@@ -106,6 +147,27 @@ var RealexHpp = (function() {
 				iFrame.style.opacity="0";
 				
 				overlayElement.appendChild(iFrame);
+				
+
+				if(isIOS && isMobileXS || isMobileXS){
+					iFrame.style.top = "0px";
+					iFrame.style.bottom = "0px";
+					iFrame.style.left = "0px";
+					iFrame.style.marginLeft = "0px;";
+					iFrame.style.width = "100%";
+					iFrame.style.height = "100%";
+					iFrame.style.minHeight = "100%";
+					iFrame.style.WebkitTransform = "translate3d(0,0,0)";
+					iFrame.style.transform = "translate3d(0, 0, 0)";
+					var metaTag=document.createElement('meta');
+					metaTag.name = "viewport";
+					metaTag.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0";
+					document.getElementsByTagName('head')[0].appendChild(metaTag);
+				}else{
+					iFrame.style.top="40px";
+					iFrame.style.left="50%";
+					iFrame.style.marginLeft="-180px";
+				}
 				
 				iFrame.onload = function() {
 					iFrame.style.opacity="1";
@@ -149,6 +211,7 @@ var RealexHpp = (function() {
 
 				form.appendChild(hppOrigin);
 
+
 				if (iFrame.contentWindow.document.body) {
 					iFrame.contentWindow.document.body.appendChild(form);
 				} else {
@@ -191,7 +254,9 @@ var RealexHpp = (function() {
 				},
 				setToken : function(hppToken) {
 					token = hppToken;
-				}
+				},
+				isMobileXS : isMobileXS,
+				isIOS: isIOS
 			};
 		}
 		
@@ -227,7 +292,6 @@ var RealexHpp = (function() {
 		}
 	
 		function receiveMessage(event) {
-			
 			// check for iframe resize values 
 			if (event.data && JSON.parse(event.data).iframe) {
 				var iframeWidth = JSON.parse(event.data).iframe.width;
@@ -237,7 +301,19 @@ var RealexHpp = (function() {
 				iFrame.setAttribute("width", iframeWidth);
 				iFrame.setAttribute("height", iframeHeight);
 				iFrame.style.backgroundColor="#ffffff";
-				iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10)/2 * -1 ) + "px";
+				
+				if(lightboxInstance.isIOS && lightboxInstance.isMobileXS || lightboxInstance.isMobileXS){
+					var overlay = document.getElementById("rxp-overlay-" + randomId);
+					iFrame.style.marginLeft = "0px";
+					iFrame.style.WebkitOverflowScrolling = "touch";
+					iFrame.style.overflowX = "scroll";
+					iFrame.style.overflowY = "scroll";
+					overlay.style.overflowX = "scroll";
+					overlay.style.overflowY = "scroll";
+					
+				}else{
+					iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10)/2 * -1 ) + "px";
+				}
 				
 				var closeButton = document.getElementById("rxp-frame-close-" + randomId);
 				closeButton.style.marginLeft = ((parseInt(iframeWidth.replace("px", ""), 10)/2) -7) + "px";
@@ -288,7 +364,6 @@ var RealexHpp = (function() {
 	};
 
 }());
-
 var RealexRemote = (function() {
 
     'use strict';
