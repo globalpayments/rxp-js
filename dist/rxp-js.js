@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.0 - 2015-10-22
+/*! rxp-js - v1.2.0 - 2015-10-28
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -222,16 +222,23 @@ var RealexHpp = (function() {
 			
 			function openWindow() {
 
+				//open new window
 				tabWindow = window.open();
 				var doc = tabWindow.document;
+				
+				//add meta tag to new window (needed for iOS 8 bug)
+				var meta = doc.createElement("meta");
+				var name = doc.createAttribute("name");
+				name.value="viewport";
+				meta.setAttributeNode(name);
+				var content = doc.createAttribute("content");
+				content.value="width=device-width";
+				meta.setAttributeNode(content);
+				doc.head.appendChild(meta);
+				
+				//create form, append to new window and submit
 				var form = createForm(doc);
-				
-				if (doc.body) {
-					doc.body.appendChild(form);
-				} else {
-					doc.appendChild(form);
-				}
-				
+				doc.body.appendChild(form);
 				form.submit();
 			}
 
