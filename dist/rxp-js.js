@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.0 - 2015-10-28
+/*! rxp-js - v1.2.0 - 2016-08-11
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -301,20 +301,8 @@ var RealexHpp = (function() {
 		
 	})();
 
-	
-	var init = function(idOfLightboxButton, merchantUrl, serverSdkJson) {
-
-		//Get the lightbox instance (it's a singleton) and set the sdk json
-		var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
-
-		// Sets the event listener on the PAY button. The click will invoke the lightbox method
-		if (document.getElementById(idOfLightboxButton).addEventListener) {
-			document.getElementById(idOfLightboxButton).addEventListener("click", lightboxInstance.lightbox, true);
-		} else {
-			document.getElementById(idOfLightboxButton).attachEvent('onclick', lightboxInstance.lightbox);
-		}
-	
-		function receiveMessage(event) {
+    function createMessageHandler (serverSdkJson, lightboxInstance, responseCallback) {
+        return function receiveMessage(event) {
 			
 			//Check the origin of the response comes from HPP
 			if (getHostnameFromUrl(event.origin) === getHostnameFromUrl(hppUrl)) {
@@ -360,7 +348,14 @@ var RealexHpp = (function() {
 					}
 					
 					var response = event.data;
+                    responseCallback(response);
+                }
+            }
+        };
+    }
 	
+    function postResponseToMerchant (merchantUrl) {
+        return function responseCallback (response) {
 					//Create a form and submit the hpp response to the merchant's response url
 					var form = document.createElement("form");
 					form.setAttribute("method", "POST");
@@ -376,18 +371,43 @@ var RealexHpp = (function() {
 					document.body.appendChild(form);
 		
 					form.submit();
+        };
 				}
-			}
+
+	var init = function(idOfLightboxButton, merchantUrl, serverSdkJson) {
+
+        var instance = setup(serverSdkJson, postResponseToMerchant(merchantUrl));
+
+		// Sets the event listener on the PAY button. The click will invoke the lightbox method
+		if (document.getElementById(idOfLightboxButton).addEventListener) {
+			document.getElementById(idOfLightboxButton).addEventListener("click", instance.open, true);
+		} else {
+			document.getElementById(idOfLightboxButton).attachEvent('onclick', instance.open);
 		}
 	
+	};
+
+    var setup = function (serverSdkJson, responseCallback) {
+        //Get the lightbox instance (it's a singleton) and set the sdk json
+		var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
+        var receiveMessage = createMessageHandler(serverSdkJson, lightboxInstance, responseCallback);
+
+        var cancel;
 		if (window.addEventListener) {
 			window.addEventListener("message", receiveMessage, false);
+            cancel = window.removeEventListener.bind(window, 'message', receiveMessage);
 		} else {
 			window.attachEvent('message', receiveMessage);
+            cancel = window.detachEvent.bind(window, 'message', receiveMessage);
 		}
 		
+        return {
+            open: lightboxInstance.lightbox,
+            cancel: cancel
+        };
 	};
 	
+
 	function getHostnameFromUrl(url) {
 		var parser = document.createElement('a');
 		parser.href = url;
@@ -396,10 +416,12 @@ var RealexHpp = (function() {
 
 	return {
 		init : init,
+        setup: setup,
 		setHppUrl : setHppUrl
 	};
 
 }());
+
 var RealexRemote = (function() {
 
     'use strict';

@@ -17,7 +17,7 @@
       "url": "https://github.com/realexpayments/rxp-js/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "lib/rxp-js",
+  "main": "index",
   "engines": {
     "node": ">= 0.10.0"
   },
