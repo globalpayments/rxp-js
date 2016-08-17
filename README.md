@@ -16,7 +16,7 @@ RealexHpp.init(payButtonId, merchantUrl, jsonFromServerSdk);
 * merchantUrl - The URL to which the JSON response from Realex will be posted.
 * jsonFromServerSdk - The JSON output from the Realex HPP Server SDK.
 
-`init()` adds an event listener to the button identified by `payButtonId`, so that when it it clicked/tapped, a lightbox (or popup window on mobile) will be opened inviting the user to enter their card details.
+`init()` adds an event listener to the button identified by `payButtonId`, so that when it is clicked/tapped, a lightbox (or popup window on mobile) will be opened inviting the user to enter their card details.
 
 #### Consuming the resulting POST
 Once the payment has completed the Realex JSON response will be posted within to the supplied merchantUrl. The name of the field containing the JSON response is hppResponse.

@@ -9,5 +9,5 @@
   "undef": true,
   "boss": true,
   "eqnull": true,
-  "predef": ["exports"]
+  "predef": ["exports", "module", "define"]
 }
