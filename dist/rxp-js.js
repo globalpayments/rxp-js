@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.0 - 2015-10-28
+/*! rxp-js - v1.2.1
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -7,7 +7,7 @@ var RealexHpp = (function() {
 
 	'use strict';
 	
-	var hppUrl = "https://hpp.realexpayments.com/pay";
+	var hppUrl = "https://pay.realexpayments.com/pay";
 	
 	var randomId = randomId || Math.random().toString(16).substr(2,8);
 
