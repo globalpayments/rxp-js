@@ -1,10 +1,10 @@
-# Realex JS SDK
-You can sign up for a Realex account at https://www.realexpayments.com.
+# Realex JS Library
+You can sign up for a Realex account at https://developer.realexpayments.com
 
-## Hosted Payment Page (HPP) JS SDK
+## Hosted Payment Page (HPP) JS Library
 
 ### Usage
-The Javascript required to initialise the SDK is below. This code must only be executed when the DOM is fully loaded.
+The Javascript required to initialise the library is below. This code must only be executed when the DOM is fully loaded.
 ```javascript
 RealexHpp.init(payButtonId, merchantUrl, jsonFromServerSdk);
 ```
@@ -15,7 +15,7 @@ RealexHpp.init(payButtonId, merchantUrl, jsonFromServerSdk);
 ### Consuming the resulting POST
 Once the payment has completed the Realex JSON response will be posted within to the supplied merchantUrl. The name of the field containing the JSON response is hppResponse.
 
-## Remote JS SDK
+## Remote JS Library
 
 ### Validation functions
 * validateCardNumber - validates card number format and performs a Luhn check
