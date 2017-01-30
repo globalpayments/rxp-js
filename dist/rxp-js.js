@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.0 - 2016-08-17
+/*! rxp-js - v1.2.1-2 - 2017-01-30
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -20,7 +20,7 @@
 }(this, function () {
 	'use strict';
 
-	var hppUrl = "https://hpp.realexpayments.com/pay";
+	var hppUrl = "https://pay.realexpayments.com/pay";
 
 	var randomId = randomId || Math.random().toString(16).substr(2,8);
 
@@ -38,6 +38,9 @@
 	// For IOs/Android and small screen devices always open in new tab/window
 	var isMobileNewTab = !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS);
 	var tabWindow;
+
+	var minIframeWidth = 360;
+	var minIframeHeight = 550;
 
 	// Initialising some variables used throughout this file.
 	var RxpLightbox = (function() {
@@ -59,6 +62,14 @@
 				}else{
 					return false;
 				}
+			}
+
+			function getIFramePxBounds () {
+				var windowHeight = window.innerHeight;
+				return {
+					minHeight: minIframeHeight,
+					maxHeight: Math.round(0.85 * windowHeight)
+				};
 			}
 
 			var isLandscape = checkDevicesOrientation();
@@ -141,28 +152,10 @@
 					}
 				}
 
-				var hppTemplateType = document.createElement("input");
-				hppTemplateType.setAttribute("type", "hidden");
-				hppTemplateType.setAttribute("name", "HPP_TEMPLATE_TYPE");
-				hppTemplateType.setAttribute("value", "LIGHTBOX");
-
-				form.appendChild(hppTemplateType);
-
-				var parser = document.createElement('a');
-				parser.href = window.location.href;
-				var hppOriginParam = parser.protocol + '//' + parser.host;
-
-				var hppOrigin = document.createElement("input");
-				hppOrigin.setAttribute("type", "hidden");
-				hppOrigin.setAttribute("name", "HPP_ORIGIN");
-				hppOrigin.setAttribute("value", hppOriginParam);
-
-				form.appendChild(hppOrigin);
 				return form;
 			}
 
 			function createIFrame() {
-
 				//Create the spinner
 				spinner = document.createElement("img");
 				spinner.setAttribute("src", "data:image/gif;base64,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");
@@ -183,9 +176,9 @@
 				iFrame = document.createElement("iframe");
 				iFrame.setAttribute("name", "rxp-frame-" + randomId);
 				iFrame.setAttribute("id", "rxp-frame-" + randomId);
-				iFrame.setAttribute("height", "85%");
+				iFrame.setAttribute("height", getIFramePxBounds().maxHeight);
 				iFrame.setAttribute("frameBorder", "0");
-				iFrame.setAttribute("width", "360px");
+				iFrame.setAttribute("width", minIframeWidth + "px");
 				iFrame.setAttribute("seamless", "seamless");
 
 				iFrame.style.zIndex="10001";
@@ -306,6 +299,18 @@
 				},
 				setToken : function(hppToken) {
 					token = hppToken;
+				},
+				normaliseWidth : function(currentWidth) {
+					return (currentWidth < minIframeHeight) ? minIframeWidth : currentWidth;
+				},
+				normaliseHeight : function(currentHeight) {
+					var bounds = getIFramePxBounds();
+					if (currentHeight < bounds.minHeight) {
+						return bounds.minHeight;
+					} else if (currentHeight > bounds.maxHeight) {
+						return bounds.maxHeight;
+					}
+					return currentHeight;
 				}
 			};
 		}
@@ -328,21 +333,29 @@
 
 	})();
 
-	function createMessageHandler (serverSdkJson, lightboxInstance, responseCallback) {
+	function createMessageHandler (lightboxInstance, responseCallback) {
 		return function receiveMessage(event) {
+			var eventData;
+			try {
+				eventData = JSON.parse(eventData);
+			} catch (e) {}
 
 			//Check the origin of the response comes from HPP
-			if (getHostnameFromUrl(event.origin) === getHostnameFromUrl(hppUrl)) {
+			if (eventData && getHostnameFromUrl(event.origin) === getHostnameFromUrl(hppUrl)) {
 
 				// check for iframe resize values
-				if (event.data && JSON.parse(event.data).iframe) {
+				if (eventData.iframe) {
 					if(!isMobileNewTab){
-						var iframeWidth = JSON.parse(event.data).iframe.width;
-						var iframeHeight = JSON.parse(event.data).iframe.height;
+						var iframeWidth = lightboxInstance.normaliseWidth(
+							parseInt(eventData.iframe.width, 10)
+						);
+						var iframeHeight = lightboxInstance.normaliseHeight(
+							parseInt(eventData.iframe.height, 10)
+						);
 
 						var iFrame = document.getElementById("rxp-frame-" + randomId);
-						iFrame.setAttribute("width", iframeWidth);
-						iFrame.setAttribute("height", iframeHeight);
+						iFrame.setAttribute("width", iframeWidth + 'px');
+						iFrame.setAttribute("height", iframeHeight + 'px');
 						iFrame.style.backgroundColor="#ffffff";
 
 						if(isMobileIFrame){
@@ -355,11 +368,13 @@
 							overlay.style.overflowY = "scroll";
 
 						}else{
-							iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10)/2 * -1 ) + "px";
+							iFrame.style.marginLeft = ((iframeWidth/2) * -1) + "px";
 						}
 
 						var closeButton = document.getElementById("rxp-frame-close-" + randomId);
-						closeButton.style.marginLeft = ((parseInt(iframeWidth.replace("px", ""), 10)/2) -7) + "px";
+						if (closeButton) {
+							closeButton.style.marginLeft = ((iframeWidth/2) -7) + "px";
+						}
 					}
 
 				} else {
@@ -416,10 +431,49 @@
 
 	};
 
+	function isBase64 (str) {
+		try {
+			// jshint -W116
+			return btoa(atob(str)) == str;
+			// jshint +W116
+		} catch (err) {
+			return false;
+		}
+	}
+
+	function setHppIframeParams (serverSdkJson) {
+		var parser = document.createElement('a');
+		parser.href = window.location.href;
+		var hppOrigin = parser.protocol + '//' + parser.host,
+			hppVersion = isBase64(serverSdkJson.HPP_VERSION) ? atob(serverSdkJson.HPP_VERSION) : serverSdkJson.HPP_VERSION,
+			version = parseInt(hppVersion, 10) || 1,
+			params = {},
+			value = null;
+
+		for (var key in serverSdkJson) {
+			value = serverSdkJson[key];
+			if (version >= 2 && isBase64(value)) {
+				// decode values for HPP_VERSION 2
+				value = atob(value);
+			}
+			params[key] = value;
+		}
+
+		if (version >= 2) {
+			params.HPP_POST_DIMENSIONS = hppOrigin;
+			params.HPP_POST_RESPONSE = hppOrigin;
+		} else {
+			params.HPP_TEMPLATE_TYPE = 'LIGHTBOX';
+			params.HPP_ORIGIN = hppOrigin;
+		}
+
+		return params;
+	}
+
 	var setup = function (serverSdkJson, responseCallback) {
 		//Get the lightbox instance (it's a singleton) and set the sdk json
-		var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
-		var receiveMessage = createMessageHandler(serverSdkJson, lightboxInstance, responseCallback);
+		var lightboxInstance = RxpLightbox.getInstance(setHppIframeParams(serverSdkJson));
+		var receiveMessage = createMessageHandler(lightboxInstance, responseCallback);
 
 		var cleanup;
 		if (window.addEventListener) {

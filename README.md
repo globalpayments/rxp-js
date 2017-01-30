@@ -1,9 +1,9 @@
-# Realex JS SDK
-You can sign up for a Realex account at https://www.realexpayments.com.
+# Realex JS Library
+You can sign up for a Realex account at https://developer.realexpayments.com
 
-## Hosted Payment Page (HPP) JS SDK
+## Hosted Payment Page (HPP) JS Library
 
-The Javascript required to initialise the SDK is below. This code must only be executed when the DOM is fully loaded.
+The Javascript required to initialise the library is below. This code must only be executed when the DOM is fully loaded.
 
 The SDK offers two methods for handling HPP payments - `init()` for quick and easy set-up with the most common defaults, and `setup()` for a lower-level api that gives you a bit more control.
 
