@@ -1,7 +1,7 @@
 {
   "name": "rxp-js",
   "description": "The official Realex Payments JS SDK",
-  "version": "1.2.1-2",
+  "version": "1.2.1-3",
   "homepage": "https://github.com/realexpayments/rxp-js",
   "author": {
     "name": "Realex Developer",
