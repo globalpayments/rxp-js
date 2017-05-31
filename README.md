@@ -23,7 +23,7 @@ Once the payment has completed the Realex JSON response will be posted within to
 * validateCvn - validates non-Amex CVN
 * validateAmexCvn - validates Amex CVN
 * validateExpiryDateFormat - validates expiry date format
-* validateExpiryDateNotInPast - validates expirfy date is not in past
+* validateExpiryDateNotInPast - validates expiry date is not in past
 
 ### Usage
 ```javascript
