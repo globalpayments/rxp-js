@@ -29,5 +29,8 @@
     "grunt-contrib-uglify": "^3.0.1",
     "grunt-contrib-watch": "^1.0.0"
   },
-  "keywords": []
+  "keywords": [],
+  "scripts": {
+    "grunt": "grunt"
+  }
 }
