@@ -9,7 +9,7 @@ module.exports = function(grunt) {
         banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>' +
         '\n * <%= pkg.description %>' +
         '<%= pkg.homepage ? "\\n * " + pkg.homepage : "" %>' +
-        '\n * Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %>' +
+        '\n * Licensed <%= _.map(pkg.licenses, "type").join(", ") %>' +
         '\n */\n',
         // Task configuration.
         concat: {
@@ -60,7 +60,7 @@ module.exports = function(grunt) {
             }
         },
         jasmine : {
-            src : 'lib/*.js', 
+            src : 'lib/*.js',
             options: {
                 specs: 'specs/*spec.js',
                 helpers: 'specs/*helper.js'
