@@ -10,12 +10,13 @@
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
             $.getJSON("/examples/hpp/proxy-request.php", function (jsonFromServerSdk) {
-                RealexHpp.init("payButtonId", "https://dev.rlxcarts.com/mobileSDKs/response.php", jsonFromServerSdk);
+                RealexHpp.init("payButtonId", "https://dev.rlxcarts.com/mobileSDKsV2/response.php", jsonFromServerSdk);
+                $('body').addClass('loaded');
             });
         });
     </script>
 </head>
 <body>
-<button type="button" id="payButtonId">Checkout Now</button>
+    <input type="submit" id="payButtonId" value="Checkout Now" />
 </body>
 </html>

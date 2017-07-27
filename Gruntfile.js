@@ -55,15 +55,37 @@ module.exports = function(grunt) {
                 tasks: ['jshint:lib', 'jasmine']
             },
             specs: {
-                files: 'specs/*.js',
+                files: 'specs/unit/*.js',
                 tasks: ['jasmine']
             }
         },
         jasmine : {
             src : 'lib/*.js',
             options: {
-                specs: 'specs/*spec.js',
-                helpers: 'specs/*helper.js'
+                specs: 'specs/unit/*spec.js',
+                helpers: 'specs/unit/*helper.js'
+            }
+        },
+        intern: {
+            client: {
+                options: {
+                    config: 'specs/intern.config'
+                }
+            },
+            runner: {
+                options: {
+                    config: 'specs/intern.config',
+                    runType: 'runner',
+                    // leaveRemoteOpen: true
+                }
+            }
+        },
+        php: {
+            test: {
+                options: {
+                    port: '8989',
+                    silent: true,
+                }
             }
         }
     });
@@ -74,6 +96,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('intern');
+    grunt.loadNpmTasks('grunt-php');
+
+    grunt.registerTask('test:functional', ['php', 'intern:runner']);
+    grunt.registerTask('test:unit', ['jasmine']);
+    grunt.registerTask('test', ['test:unit', 'test:functional']);
 
     // Default task.
     grunt.registerTask('default', ['jshint', 'jasmine', 'concat', 'uglify']);

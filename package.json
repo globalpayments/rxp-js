@@ -22,12 +22,16 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
+    "chromedriver": "^2.31.0",
+    "geckodriver": "^1.8.0",
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-jasmine": "^1.1.0",
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-uglify": "^3.0.1",
-    "grunt-contrib-watch": "^1.0.0"
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-php": "^1.5.1",
+    "intern": "^3.4.6"
   },
   "keywords": [],
   "scripts": {
