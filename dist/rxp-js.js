@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.1 - 2017-07-17
+/*! rxp-js - v1.2.1 - 2017-10-03
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -186,6 +186,10 @@ var RealexHpp = (function() {
 				iFrame.setAttribute("frameBorder", "0");
 				iFrame.setAttribute("width", "360px");
 				iFrame.setAttribute("seamless", "seamless");
+
+				if (!isMobileIFrame) {
+				    iFrame.setAttribute("scrolling", "no");
+				}
 
 				iFrame.style.zIndex="10001";
 				iFrame.style.position="absolute";
