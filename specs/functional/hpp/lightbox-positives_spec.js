@@ -18,14 +18,13 @@ define(function (require) {
         // callback to assert against result
         function (command) {
           return command
-            .findByTagName('body')
-              .getVisibleText()
-                .then(function (text) {
-                  // make our assertions on the HPP response
-                  var json = JSON.parse(text);
-                  assert.isOk(json.AUTHCODE);
-                })
-              .end()
+            .execute(() => document.body.innerText)
+              .then(function (text) {
+                // make our assertions on the HPP response
+                var json = JSON.parse(text);
+                json = JSON.parse(json.response);
+                assert.isOk(json.AUTHCODE);
+              })
             .end();
         }
       ).bind(this)

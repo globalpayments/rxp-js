@@ -1,0 +1,8 @@
+{
+  "MERCHANT_ID": "heartlandgpsandbox",
+  "ACCOUNT": "hpp",
+  "AMOUNT": "1001",
+  "CURRENCY": "EUR",
+  "AUTO_SETTLE_FLAG": "1",
+  "PM_METHODS": "cards"
+}
