@@ -286,7 +286,7 @@ var RealexHpp = (function () {
 			return internal.getHostnameFromUrl(origin) === internal.getHostnameFromUrl(hppUrl);
 		},
 
-		receiveMessage: function (lightboxInstance, merchantUrl) {
+		receiveMessage: function (lightboxInstance, merchantUrl, isEmbedded) {
 			return function (event) {
 				//Check the origin of the response comes from HPP
 				if (!internal.isMessageFromHpp(event.origin, hppUrl)) {
@@ -299,30 +299,40 @@ var RealexHpp = (function () {
 						var iframeWidth = JSON.parse(event.data).iframe.width;
 						var iframeHeight = JSON.parse(event.data).iframe.height;
 
-						var iFrame = document.getElementById("rxp-frame-" + randomId);
+						var iFrame;
+						if (isEmbedded) {
+							iFrame = lightboxInstance.getIframe();
+						} else {
+							iFrame = document.getElementById("rxp-frame-" + randomId);
+						}
+
 						iFrame.setAttribute("width", iframeWidth);
 						iFrame.setAttribute("height", iframeHeight);
 						iFrame.style.backgroundColor="#ffffff";
 
 						if (isMobileIFrame) {
-							var overlay = document.getElementById("rxp-overlay-" + randomId);
 							iFrame.style.marginLeft = "0px";
 							iFrame.style.WebkitOverflowScrolling = "touch";
 							iFrame.style.overflowX = "scroll";
 							iFrame.style.overflowY = "scroll";
-							overlay.style.overflowX = "scroll";
-							overlay.style.overflowY = "scroll";
 
-						} else {
+							if (!isEmbedded) {
+								var overlay = document.getElementById("rxp-overlay-" + randomId);
+								overlay.style.overflowX = "scroll";
+								overlay.style.overflowY = "scroll";
+							}
+						} else if (!isEmbedded) {
 							iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10) / 2 * -1) + "px";
 						}
 
-						// wrap the below in a setTimeout to prevent a timing issue on a
-						// cache-miss load
-						setTimeout(function () {
-							var closeButton = document.getElementById("rxp-frame-close-" + randomId);
-							closeButton.style.marginLeft = ((parseInt(iframeWidth.replace("px", ""), 10) / 2) -7) + "px";
-						}, 200);
+						if (!isEmbedded) {
+							// wrap the below in a setTimeout to prevent a timing issue on a
+							// cache-miss load
+							setTimeout(function () {
+								var closeButton = document.getElementById("rxp-frame-close-" + randomId);
+								closeButton.style.marginLeft = ((parseInt(iframeWidth.replace("px", ""), 10) / 2) -7) + "px";
+							}, 200);
+						}
 					}
 				} else {
 					if (isMobileNewTab && tabWindow) {
@@ -424,6 +434,80 @@ var RealexHpp = (function () {
 		};
 	})();
 
+	// Initialising some variables used throughout this file.
+	var RxpEmbedded = (function () {
+		var instance;
+
+		function init() {
+			var overlayElement;
+			var spinner;
+			var iFrame;
+			var closeButton;
+			var token;
+
+			return {
+				embedded: function () {
+					var form = internal.createForm(document, token);
+					if (iFrame) {
+						if (iFrame.contentWindow.document.body) {
+							iFrame.contentWindow.document.body.appendChild(form);
+						} else {
+							iFrame.contentWindow.document.appendChild(form);
+						}
+						form.submit();
+						iFrame.style.display = "inherit";
+					}
+				},
+				close: function () {
+					iFrame.style.display = "none";
+				},
+				setToken: function (hppToken) {
+					token = hppToken;
+				},
+				setIframe: function (iframeId) {
+					iFrame = document.getElementById(iframeId);
+				},
+				getIframe: function () {
+					return iFrame;
+				}
+			};
+		}
+
+		return {
+			// Get the Singleton instance if one exists
+			// or create one if it doesn't
+			getInstance: function (hppToken) {
+				if (!instance) {
+					instance = init();
+				}
+
+				//Set the hpp token
+				instance.setToken(hppToken);
+
+				return instance;
+			},
+			init: function (idOfEmbeddedButton, idOfTargetIframe, merchantUrl, serverSdkJson) {
+				//Get the embedded instance (it's a singleton) and set the sdk json
+				var embeddedInstance = RxpEmbedded.getInstance(serverSdkJson);
+
+				embeddedInstance.setIframe(idOfTargetIframe);
+
+				// Sets the event listener on the PAY button. The click will invoke the embedded method
+				if (document.getElementById(idOfEmbeddedButton).addEventListener) {
+					document.getElementById(idOfEmbeddedButton).addEventListener("click", embeddedInstance.embedded, true);
+				} else {
+					document.getElementById(idOfEmbeddedButton).attachEvent('onclick', embeddedInstance.embedded);
+				}
+
+				if (window.addEventListener) {
+					window.addEventListener("message", internal.receiveMessage(embeddedInstance, merchantUrl, true), false);
+				} else {
+					window.attachEvent('message', internal.receiveMessage(embeddedInstance, merchantUrl, true));
+				}
+			}
+		};
+	})();
+
 	var RxpRedirect = (function () {
 		var instance;
 
@@ -493,6 +577,9 @@ var RealexHpp = (function () {
 		init: RxpLightbox.init,
 		lightbox: {
 			init: RxpLightbox.init
+		},
+		embedded: {
+			init: RxpEmbedded.init
 		},
 		redirect: {
 			init: RxpRedirect.init

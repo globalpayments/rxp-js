@@ -3,13 +3,13 @@ define(function (require) {
   var assert = require('intern/chai!assert');
   var successHelper = require('intern/dojo/node!../../helpers/hpp').iframeSuccessHelper;
 
-  bdd.describe('RealexRemote - HPP Lightbox Positive Tests', function () {
+  bdd.describe('RealexRemote - HPP Embedded Positive Tests', function () {
     bdd.it('should process a payment successfully',
       successHelper(
         // url
-        require.toUrl('http://localhost:8989/examples/hpp/process-a-payment-lightbox.html'),
+        require.toUrl('http://localhost:8989/examples/hpp/process-a-payment-embedded.html'),
         // iframe selector
-        '[id^="rxp-frame-"]',
+        '#targetIframe',
         // fields to enter
         [
           { name: 'pas_ccnum', type: 'text', value: '4111111111111111' },

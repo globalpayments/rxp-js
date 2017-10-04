@@ -101,7 +101,7 @@ function setFrameFieldsAndSubmit(command, fields, callback) {
  * @param {object[]} fields
  * @param {Function} callback
  */
-function iframeSuccessHelper(url, fields, callback) {
+function iframeSuccessHelper(url, iframeSelector, fields, callback) {
   return function () {
     var command = this.remote;
     return loadUrlAndWait(command, url)
@@ -110,7 +110,7 @@ function iframeSuccessHelper(url, fields, callback) {
         .click()
         .end()
       // find the first iframe with an id that starts with our identifier
-      .findByCssSelector('[id^="rxp-frame-"]')
+      .findByCssSelector(iframeSelector)
         .then(setFrameFieldsAndSubmit(command, fields, callback))
         .end();
   };
