@@ -69,8 +69,6 @@ foreach ($data as $key => $value) {
     $response[$key] = $value;
 }
 
-$response["HPP_POST_RESPONSE"] = $_SERVER["HTTP_REFERER"];
-
 $response["ORDER_ID"] = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 22);
 $response["TIMESTAMP"] = (new DateTime())->format("YmdHis");
 $response["SHA1HASH"] = generateHash($response, 'secret');

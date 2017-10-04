@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.1 - 2017-10-03
+/*! rxp-js - v1.2.1 - 2017-10-04
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -25,6 +25,8 @@ var RealexHpp = (function () {
 	// For IOs/Android and small screen devices always open in new tab/window
 	var isMobileNewTab = !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS);
 	var tabWindow;
+
+	var redirectUrl;
 
 	var internal = {
 		createFormHiddenInput: function (name, value) {
@@ -121,7 +123,7 @@ var RealexHpp = (function () {
 			return closeButton;
 		},
 
-		createForm: function (doc, token) {
+		createForm: function (doc, token, ignorePostMessage) {
 			var form = document.createElement("form");
 			form.setAttribute("method", "POST");
 			form.setAttribute("action", hppUrl);
@@ -132,11 +134,15 @@ var RealexHpp = (function () {
 
 			form.appendChild(internal.createFormHiddenInput("HPP_VERSION", "2"));
 
-			var parser = internal.getUrlParser(window.location.href);
-			var hppOriginParam = parser.protocol + '//' + parser.host;
+			if (ignorePostMessage) {
+				form.appendChild(internal.createFormHiddenInput("MERCHANT_RESPONSE_URL", redirectUrl));
+			} else {
+				var parser = internal.getUrlParser(window.location.href);
+				var hppOriginParam = parser.protocol + '//' + parser.host;
 
-			form.appendChild(internal.createFormHiddenInput("HPP_POST_RESPONSE", hppOriginParam));
-			form.appendChild(internal.createFormHiddenInput("HPP_POST_DIMENSIONS", hppOriginParam));
+				form.appendChild(internal.createFormHiddenInput("HPP_POST_RESPONSE", hppOriginParam));
+				form.appendChild(internal.createFormHiddenInput("HPP_POST_DIMENSIONS", hppOriginParam));
+			}
 			return form;
 		},
 
@@ -418,11 +424,78 @@ var RealexHpp = (function () {
 		};
 	})();
 
+	var RxpRedirect = (function () {
+		var instance;
+
+		function init() {
+			var overlayElement;
+			var spinner;
+			var iFrame;
+			var closeButton;
+			var token;
+			var isLandscape = internal.checkDevicesOrientation();
+
+			if (isMobileIFrame) {
+				if (window.addEventListener) {
+						window.addEventListener("orientationchange", function () {
+						isLandscape = internal.checkDevicesOrientation();
+					}, false);
+				}
+			}
+
+			return {
+				redirect: function () {
+					var form = internal.createForm(document, token, true);
+					document.body.append(form);
+					form.submit();
+				},
+				setToken: function (hppToken) {
+					token = hppToken;
+				}
+			};
+		}
+		return {
+			// Get the singleton instance if one exists
+			// or create one if it doesn't
+			getInstance: function (hppToken) {
+				if (!instance) {
+					instance = init();
+				}
+
+				// Set the hpp token
+				instance.setToken(hppToken);
+
+				return instance;
+			},
+			init: function (idOfButton, merchantUrl, serverSdkJson) {
+				// Get the redirect instance (it's a singleton) and set the sdk json
+				var redirectInstance = RxpRedirect.getInstance(serverSdkJson);
+				redirectUrl = merchantUrl;
+
+				// Sets the event listener on the PAY button. The click will invoke the redirect method
+				if (document.getElementById(idOfButton).addEventListener) {
+					document.getElementById(idOfButton).addEventListener("click", redirectInstance.redirect, true);
+				} else {
+					document.getElementById(idOfButton).attachEvent('onclick', redirectInstance.redirect);
+				}
+
+				if (window.addEventListener) {
+					window.addEventListener("message", internal.receiveMessage(redirectInstance, merchantUrl), false);
+				} else {
+					window.attachEvent('message', internal.receiveMessage(redirectInstance, merchantUrl));
+				}
+			}
+		};
+	}());
+
 	// RealexHpp
 	return {
 		init: RxpLightbox.init,
 		lightbox: {
 			init: RxpLightbox.init
+		},
+		redirect: {
+			init: RxpRedirect.init
 		},
 		setHppUrl: setHppUrl,
 		_internal: internal

@@ -35,6 +35,32 @@ function setField(command, field) {
 }
 
 /**
+ * Set's the given fields. Will call `callback`
+ * with the command/session to complete any assertions.
+ *
+ * @param {leadfoot/Command} command
+ * @param {object[]} fields
+ * @param {Function} callback
+ */
+function setFieldsAndSubmit(command, fields, callback) {
+  // start - enter form data
+  for (var i = 0; i < fields.length; i++) {
+    command = setField(command, fields[i]);
+  }
+  // end - enter form data
+
+  command = command
+    // submit HPP
+    .findById('rxp-primary-btn')
+      .click()
+      .end()
+    // wait for redirect to HPP response consumer
+    // TODO: figure out a way to do this without `sleep`
+    .sleep(1500);
+  return callback(command);
+}
+
+/**
  * Focuses a frame and set's the given fields. Will call `callback`
  * with the command/session to complete any assertions.
  *
@@ -75,7 +101,7 @@ function setFrameFieldsAndSubmit(command, fields, callback) {
  * @param {object[]} fields
  * @param {Function} callback
  */
-function successHelper(url, fields, callback) {
+function iframeSuccessHelper(url, fields, callback) {
   return function () {
     var command = this.remote;
     return loadUrlAndWait(command, url)
@@ -90,6 +116,27 @@ function successHelper(url, fields, callback) {
   };
 }
 
+/**
+ * Completes an HPP redirect with the given fields. Will call `callback`
+ * with the command/session to complete any assertions.
+ *
+ * @param {string} url
+ * @param {object[]} fields
+ * @param {Function} callback
+ */
+function redirectSuccessHelper(url, fields, callback) {
+  return function () {
+    var command = this.remote;
+    return loadUrlAndWait(command, url)
+      // start HPP
+      .findById('payButtonId')
+        .click()
+        .end()
+      .then(() => setFieldsAndSubmit(command, fields, callback));
+  };
+}
+
 module.exports = {
-  successHelper: successHelper,
+  iframeSuccessHelper: iframeSuccessHelper,
+  redirectSuccessHelper: redirectSuccessHelper,
 };

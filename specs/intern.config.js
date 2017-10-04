@@ -7,7 +7,10 @@ define({
 	// browser and platform names, and version number formats, may differ between cloud testing systems.
 	environments: [
     { browserName: 'chrome' },
-  ],
+	],
+
+	// Uncomment to keep browser automation session open to inspect results of tests
+	// leaveRemoteOpen: true,
 
 	// Name of the tunnel class to use for WebDriver tests.
 	// See <https://theintern.github.io/intern/#option-tunnel> for built-in options

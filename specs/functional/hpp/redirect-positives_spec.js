@@ -1,13 +1,13 @@
 define(function (require) {
   var bdd = require('intern!bdd');
   var assert = require('intern/chai!assert');
-  var successHelper = require('intern/dojo/node!../../helpers/hpp').iframeSuccessHelper;
+  var successHelper = require('intern/dojo/node!../../helpers/hpp').redirectSuccessHelper;
 
-  bdd.describe('RealexRemote - HPP Positive Tests', function () {
+  bdd.describe('RealexRemote - HPP Redirect Positive Tests', function () {
     bdd.it('should process a payment successfully',
       successHelper(
         // url
-        require.toUrl('http://localhost:8989/examples/hpp/process-a-payment.html'),
+        require.toUrl('http://localhost:8989/examples/hpp/redirect-for-payment.html'),
         // fields to enter
         [
           { name: 'pas_ccnum', type: 'text', value: '4111111111111111' },
@@ -21,9 +21,7 @@ define(function (require) {
             .execute(() => document.body.innerText)
               .then(function (text) {
                 // make our assertions on the HPP response
-                var json = JSON.parse(text);
-                json = JSON.parse(json.response);
-                assert.isOk(json.AUTHCODE);
+                assert.isOk(text.indexOf('Your transaction has been successful') !== -1);
               })
             .end();
         }
