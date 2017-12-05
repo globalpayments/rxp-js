@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.1 - 2017-10-04
+/*! rxp-js - v1.2.1 - 2017-12-05
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -170,14 +170,10 @@ var RealexHpp = (function () {
 			var iFrame = document.createElement("iframe");
 			iFrame.setAttribute("name", "rxp-frame-" + randomId);
 			iFrame.setAttribute("id", "rxp-frame-" + randomId);
-			iFrame.setAttribute("height", "85%");
+			iFrame.setAttribute("height", "562px");
 			iFrame.setAttribute("frameBorder", "0");
 			iFrame.setAttribute("width", "360px");
 			iFrame.setAttribute("seamless", "seamless");
-
-			if (!isMobileIFrame) {
-				iFrame.setAttribute("scrolling", "no");
-			}
 
 			iFrame.style.zIndex = "10001";
 			iFrame.style.position = "absolute";
@@ -300,14 +296,20 @@ var RealexHpp = (function () {
 						var iframeHeight = JSON.parse(event.data).iframe.height;
 
 						var iFrame;
+						var resized = false;
+
 						if (isEmbedded) {
 							iFrame = lightboxInstance.getIframe();
 						} else {
 							iFrame = document.getElementById("rxp-frame-" + randomId);
 						}
 
-						iFrame.setAttribute("width", iframeWidth);
-						iFrame.setAttribute("height", iframeHeight);
+						if (iframeWidth === "390px" && iframeHeight === "440px") {
+							iFrame.setAttribute("width", iframeWidth);
+							iFrame.setAttribute("height", iframeHeight);
+							resized = true;
+						}
+
 						iFrame.style.backgroundColor="#ffffff";
 
 						if (isMobileIFrame) {
@@ -321,11 +323,11 @@ var RealexHpp = (function () {
 								overlay.style.overflowX = "scroll";
 								overlay.style.overflowY = "scroll";
 							}
-						} else if (!isEmbedded) {
+						} else if (!isEmbedded && resized) {
 							iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10) / 2 * -1) + "px";
 						}
 
-						if (!isEmbedded) {
+						if (!isEmbedded && resized) {
 							// wrap the below in a setTimeout to prevent a timing issue on a
 							// cache-miss load
 							setTimeout(function () {
