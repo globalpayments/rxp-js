@@ -1,4 +1,4 @@
-/*! rxp-js - v1.2.1
+/*! rxp-js - v1.2.1 - 2017-10-03
  * The official Realex Payments JS SDK
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -6,38 +6,46 @@
 var RealexHpp = (function() {
 
 	'use strict';
-	
+
 	var hppUrl = "https://pay.realexpayments.com/pay";
-	
+
 	var randomId = randomId || Math.random().toString(16).substr(2,8);
 
 	var setHppUrl = function(url) {
 		hppUrl = url;
 	};
-	
+
 	var isWindowsMobileOs = /Windows Phone|IEMobile/.test(navigator.userAgent);
 	var isAndroidOrIOs = /Android|iPad|iPhone|iPod/.test(navigator.userAgent);
 	var isMobileXS =  ( (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= 360 ? true : false) || (((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= 360 ? true : false)) ;
-    
-	// Display IFrame on WIndows Phone OS mobile devices   
+
+	// Display IFrame on WIndows Phone OS mobile devices
 	var isMobileIFrame = isWindowsMobileOs;
-    
+
 	// For IOs/Android and small screen devices always open in new tab/window
 	var isMobileNewTab = !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS);
 	var tabWindow;
-	
+
+	function createFormHiddenInput(name, value) {
+		var el = document.createElement("input");
+		el.setAttribute("type", "hidden");
+		el.setAttribute("name", name);
+		el.setAttribute("value", value);
+		return el;
+	}
+
 	// Initialising some variables used throughout this file.
 	var RxpLightbox = (function() {
 
 		var instance;
-		
+
 		function init() {
 			var overlayElement;
 			var spinner;
 			var iFrame;
 			var closeButton;
 			var token;
-            
+
 			function checkDevicesOrientation(){
 				if(window.orientation === 90 || window.orientation === -90){
 					return true;
@@ -45,9 +53,9 @@ var RealexHpp = (function() {
 					return false;
 				}
 			}
-            
+
 			var isLandscape = checkDevicesOrientation();
-            
+
 			if(isMobileIFrame){
 				if(window.addEventListener){
 						window.addEventListener("orientationchange", function() {
@@ -55,7 +63,7 @@ var RealexHpp = (function() {
 					}, false);
 				}
 			}
-			
+
 			// Initialising some variables used throughout this function.
 			function createOverlay() {
 				var overlay = document.createElement("div");
@@ -66,15 +74,15 @@ var RealexHpp = (function() {
 				overlay.style.top="0";
 				overlay.style.left="0";
 				overlay.style.transition="all 0.3s ease-in-out";
-				overlay.style.zIndex="100"; 
-                
+				overlay.style.zIndex="100";
+
 				if(isMobileIFrame){
 					overlay.style.position="absolute !important";
 					overlay.style.WebkitOverflowScrolling = "touch";
 					overlay.style.overflowX = "hidden";
 					overlay.style.overflowY = "scroll";
 				}
-				
+
 				document.body.appendChild(overlay);
 
 				setTimeout(function() {
@@ -84,18 +92,40 @@ var RealexHpp = (function() {
 				overlayElement = overlay;
 			}
 
-			
+			function closeModal() {
+
+				if (closeButton.parentNode) {
+					closeButton.parentNode.removeChild(closeButton);
+				}
+
+				if (iFrame.parentNode) {
+					iFrame.parentNode.removeChild(iFrame);
+				}
+
+				if (spinner.parentNode) {
+					spinner.parentNode.removeChild(spinner);
+				}
+
+				overlayElement.className = "";
+				setTimeout(function() {
+					if (overlayElement.parentNode) {
+						overlayElement.parentNode.removeChild(overlayElement);
+					}
+				}, 300);
+			}
+
+
 			function createCloseButton(){
 				if(document.getElementById("rxp-frame-close-" + randomId) === null) {
 					closeButton = document.createElement("img");
 					closeButton.setAttribute("id","rxp-frame-close-" + randomId);
 					closeButton.setAttribute("src", "data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QUJFRjU1MEIzMUQ3MTFFNThGQjNERjg2NEZCRjFDOTUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QUJFRjU1MEMzMUQ3MTFFNThGQjNERjg2NEZCRjFDOTUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpBQkVGNTUwOTMxRDcxMUU1OEZCM0RGODY0RkJGMUM5NSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpBQkVGNTUwQTMxRDcxMUU1OEZCM0RGODY0RkJGMUM5NSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PlHco5QAAAHpSURBVHjafFRdTsJAEF42JaTKn4glGIg++qgX4AAchHAJkiZcwnAQD8AF4NFHCaC2VgWkIQQsfl/jNJUik8Duzs/XmW9mN7Xb7VRc5vP5zWKxaK5Wq8Zmu72FqobfJG0YQ9M0+/l8/qFQKDzGY1JxENd1288vLy1s786KRZXJZCLber1Wn7MZt4PLarVnWdZ9AmQ8Hncc17UvymVdBMB/MgPQm+cFFcuy6/V6lzqDf57ntWGwYdBIVx0TfkBD6I9M35iRJgfIoAVjBLDZbA4CiJ5+9AdQi/EahibqDTkQx6fRSIHcPwA8Uy9A9Gcc47Xv+w2wzhRDYzqdVihLIbsIiCvP1NNOoX/29FQx3vgOgtt4FyRdCgPRarX4+goB9vkyAMh443cOEsIAAcjncuoI4TXWMAmCIGFhCQLAdZ8jym/cRJ+Y5nC5XCYAhINKpZLgSISZgoqh5iiLQrojAFICVwGS7tCfe5DbZzkP56XS4NVxwvTI/vXVVYIDnqmnnX70ZxzjNS8THHooK5hMpxHQIREA+tEfA9djfHR3MHkdx3Hspe9r3B+VzWaj2RESyR2mlCUE4MoGQDdxiwHURq2t94+PO9bMIYyTyDNLwMoM7g8+BfKeYGniyw2MdfSehF3Qmk1IvCc/AgwAaS86Etp38bUAAAAASUVORK5CYII=");
 					closeButton.setAttribute("style","transition: all 0.5s ease-in-out; opacity: 0; float: left; position: absolute; left: 50%; margin-left: 173px; z-index: 99999999; top: 30px;");
-					
+
 					setTimeout(function(){
 						closeButton.style.opacity = "1";
 					},500);
-                    
+
 					if(isMobileIFrame){
 						closeButton.style.position = "absolute";
 						closeButton.style.float = "right";
@@ -104,7 +134,7 @@ var RealexHpp = (function() {
 						closeButton.style.marginLeft = "0px";
 						closeButton.style.right = "20px";
 					}
-					
+
 					closeButton.addEventListener("click", closeModal, true);
 					overlayElement.appendChild(closeButton);
 				}
@@ -116,35 +146,20 @@ var RealexHpp = (function() {
 				form.setAttribute("action", hppUrl);
 
 				for ( var key in token) {
-
-					var hiddenField = document.createElement("input");
-					hiddenField.setAttribute("type", "hidden");
-					hiddenField.setAttribute("name", key);
-					hiddenField.setAttribute("value", token[key]);
-
-					form.appendChild(hiddenField);
+					form.appendChild(createFormHiddenInput(key, token[key]));
 				}
 
-				var hppTemplateType = document.createElement("input");
-				hppTemplateType.setAttribute("type", "hidden");
-				hppTemplateType.setAttribute("name", "HPP_TEMPLATE_TYPE");
-				hppTemplateType.setAttribute("value", "LIGHTBOX");
-
-				form.appendChild(hppTemplateType);
+				form.appendChild(createFormHiddenInput("HPP_VERSION", "2"));
 
 				var parser = document.createElement('a');
 				parser.href = window.location.href;
 				var hppOriginParam = parser.protocol + '//' + parser.host;
 
-				var hppOrigin = document.createElement("input");
-				hppOrigin.setAttribute("type", "hidden");
-				hppOrigin.setAttribute("name", "HPP_ORIGIN");
-				hppOrigin.setAttribute("value", hppOriginParam);
-
-				form.appendChild(hppOrigin);
+				form.appendChild(createFormHiddenInput("HPP_POST_RESPONSE", hppOriginParam));
+				form.appendChild(createFormHiddenInput("HPP_POST_DIMENSIONS", hppOriginParam));
 				return form;
 			}
-			
+
 			function createIFrame() {
 
 				//Create the spinner
@@ -160,7 +175,7 @@ var RealexHpp = (function() {
 				spinner.style.zIndex="200";
 				spinner.style.marginLeft="-15px";
 				spinner.style.top="120px";
-				
+
 				document.body.appendChild(spinner);
 
 				//Create the iframe
@@ -171,15 +186,19 @@ var RealexHpp = (function() {
 				iFrame.setAttribute("frameBorder", "0");
 				iFrame.setAttribute("width", "360px");
 				iFrame.setAttribute("seamless", "seamless");
-				
+
+				if (!isMobileIFrame) {
+				    iFrame.setAttribute("scrolling", "no");
+				}
+
 				iFrame.style.zIndex="10001";
 				iFrame.style.position="absolute";
 				iFrame.style.transition="transform 0.5s ease-in-out";
 				iFrame.style.transform="scale(0.7)";
 				iFrame.style.opacity="0";
-				
+
 				overlayElement.appendChild(iFrame);
-				
+
 				if(isMobileIFrame){
 					iFrame.style.top = "0px";
 					iFrame.style.bottom = "0px";
@@ -199,11 +218,12 @@ var RealexHpp = (function() {
 					iFrame.style.left="50%";
 					iFrame.style.marginLeft="-180px";
 				}
-			
+
 				iFrame.onload = function() {
 					iFrame.style.opacity="1";
 					iFrame.style.transform="scale(1)";
-					
+					iFrame.style.backgroundColor = "#ffffff";
+
 					if (spinner.parentNode) {
 						spinner.parentNode.removeChild(spinner);
 					}
@@ -216,16 +236,16 @@ var RealexHpp = (function() {
 				} else {
 					iFrame.contentWindow.document.appendChild(form);
 				}
-				
+
 				form.submit();
 			}
-			
+
 			function openWindow() {
 
 				//open new window
 				tabWindow = window.open();
 				var doc = tabWindow.document;
-				
+
 				//add meta tag to new window (needed for iOS 8 bug)
 				var meta = doc.createElement("meta");
 				var name = doc.createAttribute("name");
@@ -235,38 +255,16 @@ var RealexHpp = (function() {
 				content.value="width=device-width";
 				meta.setAttributeNode(content);
 				doc.head.appendChild(meta);
-				
+
 				//create form, append to new window and submit
 				var form = createForm(doc);
 				doc.body.appendChild(form);
 				form.submit();
 			}
 
-			function closeModal() {
-				
-				if (closeButton.parentNode) {
-					closeButton.parentNode.removeChild(closeButton);
-				}
-				
-				if (iFrame.parentNode) {
-					iFrame.parentNode.removeChild(iFrame);
-				}
-				
-				if (spinner.parentNode) {
-					spinner.parentNode.removeChild(spinner);
-				}
-
-				overlayElement.className = "";
-				setTimeout(function() {
-					if (overlayElement.parentNode) {
-						overlayElement.parentNode.removeChild(overlayElement);
-					}
-				}, 300);
-			}
-			
 			return {
 				lightbox : function() {
-					
+
 					if(isMobileNewTab){
 						openWindow();
 					} else {
@@ -282,27 +280,27 @@ var RealexHpp = (function() {
 				}
 			};
 		}
-		
+
 		return {
 			// Get the Singleton instance if one exists
 			// or create one if it doesn't
 			getInstance: function (hppToken) {
-		 
+
 				if ( !instance ) {
 					instance = init();
 				}
-				
+
 				//Set the hpp token
 				instance.setToken(hppToken);
-				
+
 				return instance;
 			}
 		};
-		
+
 	})();
 
-	
-	var init = function(idOfLightboxButton, merchantUrl, serverSdkJson) {
+
+	var lightboxInit = function(idOfLightboxButton, merchantUrl, serverSdkJson) {
 
 		//Get the lightbox instance (it's a singleton) and set the sdk json
 		var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
@@ -313,18 +311,24 @@ var RealexHpp = (function() {
 		} else {
 			document.getElementById(idOfLightboxButton).attachEvent('onclick', lightboxInstance.lightbox);
 		}
-	
+
+    function getHostnameFromUrl(url) {
+      var parser = document.createElement('a');
+      parser.href = url;
+      return parser.hostname;
+    }
+
 		function receiveMessage(event) {
-			
+
 			//Check the origin of the response comes from HPP
 			if (getHostnameFromUrl(event.origin) === getHostnameFromUrl(hppUrl)) {
-	
-				// check for iframe resize values 
+
+				// check for iframe resize values
 				if (event.data && JSON.parse(event.data).iframe) {
 					if(!isMobileNewTab){
 						var iframeWidth = JSON.parse(event.data).iframe.width;
 						var iframeHeight = JSON.parse(event.data).iframe.height;
-						
+
 						var iFrame = document.getElementById("rxp-frame-" + randomId);
 						iFrame.setAttribute("width", iframeWidth);
 						iFrame.setAttribute("height", iframeHeight);
@@ -338,7 +342,7 @@ var RealexHpp = (function() {
 							iFrame.style.overflowY = "scroll";
 							overlay.style.overflowX = "scroll";
 							overlay.style.overflowY = "scroll";
-						
+
 						}else{
 							iFrame.style.marginLeft = (parseInt(iframeWidth.replace("px", ""), 10)/2 * -1 ) + "px";
 						}
@@ -346,60 +350,53 @@ var RealexHpp = (function() {
 						var closeButton = document.getElementById("rxp-frame-close-" + randomId);
 						closeButton.style.marginLeft = ((parseInt(iframeWidth.replace("px", ""), 10)/2) -7) + "px";
                     }
-				
+
 				} else {
-		
+
 					if(isMobileNewTab){
 						//Close the new window
 						if(tabWindow){
-							tabWindow.close();	
+							tabWindow.close();
 						}
 					} else {
 						//Close the lightbox
 						lightboxInstance.close();
 					}
-					
+
 					var response = event.data;
-	
+
 					//Create a form and submit the hpp response to the merchant's response url
 					var form = document.createElement("form");
 					form.setAttribute("method", "POST");
 					form.setAttribute("action", merchantUrl);
-		
-					var hiddenField = document.createElement("input");
-					hiddenField.setAttribute("type", "hidden");
-					hiddenField.setAttribute("name", "hppResponse");
-					hiddenField.setAttribute("value", response);
-					
-					form.appendChild(hiddenField);
-		
+
+					form.appendChild(createFormHiddenInput("hppResponse", response));
+
 					document.body.appendChild(form);
-		
+
 					form.submit();
 				}
 			}
 		}
-	
+
 		if (window.addEventListener) {
 			window.addEventListener("message", receiveMessage, false);
 		} else {
 			window.attachEvent('message', receiveMessage);
 		}
-		
+
 	};
-	
-	function getHostnameFromUrl(url) {
-		var parser = document.createElement('a');
-		parser.href = url;
-		return parser.hostname;
-	}
 
 	return {
-		init : init,
+		init : lightboxInit,
+		lightbox: {
+			init: lightboxInit
+		},
 		setHppUrl : setHppUrl
 	};
 
 }());
+
 var RealexRemote = (function() {
 
     'use strict';
