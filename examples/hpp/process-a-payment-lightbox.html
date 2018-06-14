@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HPP Lightbox Demo</title>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="/dist/rxp-js.js"></script>
+    <script>
+        RealexHpp.setHppUrl('https://pay.sandbox.realexpayments.com/pay');
+        // get the HPP JSON from the server-side SDK
+        $(document).ready(function () {
+            $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
+                RealexHpp.lightbox.init("payButtonId", "https://dev.rlxcarts.com/mobileSDKsV2/response.php", jsonFromServerSdk);
+                $('body').addClass('loaded');
+            });
+        });
+    </script>
+</head>
+<body>
+    <input type="submit" id="payButtonId" value="Checkout Now" />
+</body>
+</html>
