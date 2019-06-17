@@ -15,6 +15,14 @@ RealexHpp.init(payButtonId, merchantUrl, jsonFromServerSdk);
 ### Consuming the resulting POST
 Once the payment has completed the Realex JSON response will be posted within to the supplied merchantUrl. The name of the field containing the JSON response is hppResponse.
 
+If you prefer to handle response manually, provide your own callback function in "merchantUrl". The answer will be pre-parsed to an object ready to be used.
+
+## Examples
+* [embedded iFrame](examples/hpp/process-a-payment-embedded.html)
+* [embedded iFrame autoload](examples/hpp/process-a-payment-embedded-autoload.html)
+* [embedded iFrame autoload, callback](examples/hpp/process-a-payment-embedded-autoload-callback.html)
+* [lightbox/modal](examples/hpp/process-a-payment-lightbox.html)
+
 ## Remote JS Library
 
 ### Validation functions
