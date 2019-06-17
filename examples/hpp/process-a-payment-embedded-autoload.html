@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HPP Lightbox Demo</title>
+    <title>HPP embed Demo</title>
     <meta charset="UTF-8">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="/dist/rxp-js.js"></script>
@@ -10,10 +10,16 @@
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
             $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
-                RealexHpp.lightbox.init(
-                    "payButtonId",
-                    "https://dev.rlxcarts.com/mobileSDKsV2/response.php", // merchant url
-                    jsonFromServerSdk   //form data
+                RealexHpp.embedded.init(
+                    "autoload",
+                    "targetIframe",
+                    "https://dev.rlxcarts.com/mobileSDKsV2/response.php",
+                    jsonFromServerSdk,
+                    {
+                        onResize:function(data){
+							$('#targetIframe').css(data)
+                        }
+                    }
                 );
                 $('body').addClass('loaded');
             });
@@ -21,6 +27,6 @@
     </script>
 </head>
 <body>
-    <input type="submit" id="payButtonId" value="Checkout Now" />
+    <iframe id="targetIframe" style="display:none;"></iframe>
 </body>
 </html>

@@ -11,11 +11,24 @@
         $(document).ready(function () {
             $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
                 RealexHpp.embedded.init(
-                    "payButtonId",
+                    "autoload",
                     "targetIframe",
-                    "https://dev.rlxcarts.com/mobileSDKsV2/response.php",   // merchant url
-                    jsonFromServerSdk,  // form data
-                    {   // options
+                    function(answer,close){
+						console.log('embed answer',answer)
+						close();
+						if(answer.AUTHCODE){
+                            $('.paymentResult').html('<div class="alert alert-success">All set!</div>');
+							//success
+							success(answer);
+						}
+						else{
+							//error
+                            $('.paymentResult').html('<div class="alert alert-danger">'+answer.MESSAGE+'</div>');
+                            //would you retry? This part should be handled at the rxp side, stay in the modal/iframe... TODO
+						}
+					},
+                    jsonFromServerSdk,
+                    {
                         onResize:function(data){
 							$('#targetIframe').css(data)
                         }
@@ -27,8 +40,7 @@
     </script>
 </head>
 <body>
-    <input type="submit" id="payButtonId" value="Checkout Now" />
-    <br />
+    <div class="paymentResult"></div>
     <iframe id="targetIframe" style="display:none;"></iframe>
 </body>
 </html>
