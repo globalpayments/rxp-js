@@ -492,7 +492,6 @@ var RealexHpp = (function () {
 
 		function init() {
 			var overlayElement;
-			var callback;
 			var spinner;
 			var iFrame;
 			var closeButton;
