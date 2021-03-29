@@ -1,18 +1,18 @@
-/*! rxp-js - v1.3.1 - 2018-08-30
+/*! rxp-js - v1.4.0 - 2021-03-29
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
  */
 Element.prototype.remove = function() {
     this.parentElement.removeChild(this);
-}
+};
 NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
     for(var i = this.length - 1; i >= 0; i--) {
         if(this[i] && this[i].parentElement) {
             this[i].parentElement.removeChild(this[i]);
         }
     }
-}
+};
 var RealexHpp = (function () {
 
 	'use strict';
@@ -52,23 +52,23 @@ var RealexHpp = (function () {
 				var chr1, chr2, chr3 = "";
 				var enc1, enc2, enc3, enc4 = "";
 				var i = 0;
-		
+
 				do {
 				   chr1 = input.charCodeAt(i++);
 				   chr2 = input.charCodeAt(i++);
 				   chr3 = input.charCodeAt(i++);
-		
+
 				   enc1 = chr1 >> 2;
 				   enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
 				   enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
 				   enc4 = chr3 & 63;
-		
+
 				   if (isNaN(chr2)) {
 					  enc3 = enc4 = 64;
 				   } else if (isNaN(chr3)) {
 					  enc4 = 64;
 				   }
-		
+
 				   output = output +
 					  keyStr.charAt(enc1) +
 					  keyStr.charAt(enc2) +
@@ -77,12 +77,13 @@ var RealexHpp = (function () {
 				   chr1 = chr2 = chr3 = "";
 				   enc1 = enc2 = enc3 = enc4 = "";
 				} while (i < input.length);
-		
+
 				return output;
 			},
 			decode:function(input) {
-				if(typeof input == 'undefined')
+				if(typeof input === 'undefined') {
 					return input;
+				}
 				var keyStr = "ABCDEFGHIJKLMNOP" +
 			   "QRSTUVWXYZabcdef" +
 			   "ghijklmnopqrstuv" +
@@ -92,7 +93,7 @@ var RealexHpp = (function () {
 				var chr1, chr2, chr3 = "";
 				var enc1, enc2, enc3, enc4 = "";
 				var i = 0;
-		
+
 				// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
 				var base64test = /[^A-Za-z0-9\+\/\=]/g;
 				if (base64test.exec(input)) {
@@ -101,31 +102,31 @@ var RealexHpp = (function () {
 						 "Expect errors in decoding.");
 				}
 				input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-		
+
 				do {
 				   enc1 = keyStr.indexOf(input.charAt(i++));
 				   enc2 = keyStr.indexOf(input.charAt(i++));
 				   enc3 = keyStr.indexOf(input.charAt(i++));
 				   enc4 = keyStr.indexOf(input.charAt(i++));
-		
+
 				   chr1 = (enc1 << 2) | (enc2 >> 4);
 				   chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
 				   chr3 = ((enc3 & 3) << 6) | enc4;
-		
+
 				   output = output + String.fromCharCode(chr1);
-		
-				   if (enc3 != 64) {
+
+				   if (enc3 !== 64) {
 					  output = output + String.fromCharCode(chr2);
 				   }
-				   if (enc4 != 64) {
+				   if (enc4 !== 64) {
 					  output = output + String.fromCharCode(chr3);
 				   }
-		
+
 				   chr1 = chr2 = chr3 = "";
 				   enc1 = enc2 = enc3 = enc4 = "";
-		
+
 				} while (i < input.length);
-		
+
 				return unescape(output);
 			}
 		},
@@ -133,8 +134,9 @@ var RealexHpp = (function () {
 
 			var _r=JSON.parse(answer);
 			for(var r in _r){
-				if(_r[r])
-					_r[r]=internal.base64.decode(_r[r])
+				if(_r[r]) {
+					_r[r]=internal.base64.decode(_r[r]);
+				}
 			}
 			return _r;
 		},
@@ -236,20 +238,20 @@ var RealexHpp = (function () {
 			var form = document.createElement("form");
 			form.setAttribute("method", "POST");
 			form.setAttribute("action", hppUrl);
-			
+
 			var versionSet = false;
-	
+
 			for (var key in token) {
 				if (key === "HPP_VERSION"){
 					versionSet = true;
 				}
 				form.appendChild(internal.createFormHiddenInput(key, token[key]));
 			}
-			
+
 			if (versionSet === false){
 				form.appendChild(internal.createFormHiddenInput("HPP_VERSION", "2"));
 			}
-			
+
 			if (ignorePostMessage) {
 				form.appendChild(internal.createFormHiddenInput("MERCHANT_RESPONSE_URL", redirectUrl));
 			} else {
@@ -419,7 +421,9 @@ var RealexHpp = (function () {
 						} else {
 							iFrame = document.getElementById("rxp-frame-" + randomId);
 						}
-						if(lightboxInstance.events && lightboxInstance.events.onResize) lightboxInstance.events.onResize(evtdata.iframe)
+						if(lightboxInstance.events && lightboxInstance.events.onResize) {
+							lightboxInstance.events.onResize(evtdata.iframe);
+						}
 
 						if (iframeWidth === "390px" && iframeHeight === "440px") {
 							iFrame.setAttribute("width", iframeWidth);
@@ -462,13 +466,15 @@ var RealexHpp = (function () {
 							//Close the lightbox
 							lightboxInstance.close();
 						}
-						var overlay=document.getElementById("rxp-overlay-" + randomId)
-						if(overlay) overlay.remove();
+						var overlay=document.getElementById("rxp-overlay-" + randomId);
+						if(overlay) {
+							overlay.remove();
+						}
 
-					}
+					};
 					var response = event.data;
 					//allow the script to intercept the answer, instead of redirecting to another page. (which is really a 90s thing)
-					if(typeof merchantUrl=='function'){
+					if(typeof merchantUrl==='function'){
 						var answer=internal.decodeAnswer(response);
 						merchantUrl(answer,_close);
 						return;
@@ -492,7 +498,6 @@ var RealexHpp = (function () {
 
 		function init() {
 			var overlayElement;
-			var callback;
 			var spinner;
 			var iFrame;
 			var closeButton;
@@ -546,7 +551,7 @@ var RealexHpp = (function () {
 				var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
 
 				//if you want the form to load on function call, set to autoload
-				if(idOfLightboxButton=='autoload'){
+				if(idOfLightboxButton==='autoload'){
 					lightboxInstance.lightbox();
 				}
 				// Sets the event listener on the PAY button. The click will invoke the lightbox method
@@ -623,7 +628,7 @@ var RealexHpp = (function () {
 
 				embeddedInstance.setIframe(idOfTargetIframe);
 				//if you want the form to load on function call, set to autoload
-				if(idOfEmbeddedButton=='autoload'){
+				if(idOfEmbeddedButton==='autoload'){
 					embeddedInstance.embedded();
 				}
 				// Sets the event listener on the PAY button. The click will invoke the embedded method
@@ -723,7 +728,6 @@ var RealexHpp = (function () {
 	};
 
 }());
-
 var RealexRemote = (function() {
 
     'use strict';
