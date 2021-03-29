@@ -108,7 +108,7 @@ var RealexHpp = (function () {
 				// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
 				var base64test = /[^A-Za-z0-9\+\/\=]/g;
 				if (base64test.exec(input)) {
-				   alert("There were invalid base64 characters in the input text.\n" +
+				   throw new Error("There were invalid base64 characters in the input text.\n" +
 						 "Valid base64 characters are A-Z, a-z, 0-9, '+', '/',and '='\n" +
 						 "Expect errors in decoding.");
 				}
@@ -143,12 +143,21 @@ var RealexHpp = (function () {
 		},
 		decodeAnswer:function(answer){ //internal.decodeAnswer
 
-			var _r=JSON.parse(answer);
-			for(var r in _r){
-				if(_r[r]) {
-					_r[r]=internal.base64.decode(_r[r]);
-				}
+			var _r;
+
+			try {
+				_r=JSON.parse(answer);
+			} catch (e) {
+				_r = { error: true, message: answer };
 			}
+
+			try {
+				for(var r in _r){
+					if(_r[r]) {
+						_r[r]=internal.base64.decode(_r[r]);
+					}
+				}
+			} catch (e) { /** */ }
 			return _r;
 		},
 		createFormHiddenInput: function (name, value) {
@@ -419,7 +428,7 @@ var RealexHpp = (function () {
 				}
 				// check for iframe resize values
 				var evtdata;
-				if (event.data && (evtdata=JSON.parse(event.data)).iframe) {
+				if (event.data && (evtdata=internal.decodeAnswer(event.data)).iframe) {
 					if (!isMobileNewTab()) {
 						var iframeWidth = evtdata.iframe.width;
 						var iframeHeight = evtdata.iframe.height;
