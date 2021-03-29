@@ -25,15 +25,26 @@ var RealexHpp = (function () {
 		hppUrl = url;
 	};
 
+	var mobileXSLowerBound = 360;
+	var setMobileXSLowerBound = function (lowerBound) {
+		mobileXSLowerBound = lowerBound;
+	};
+
 	var isWindowsMobileOs = /Windows Phone|IEMobile/.test(navigator.userAgent);
 	var isAndroidOrIOs = /Android|iPad|iPhone|iPod/.test(navigator.userAgent);
-	var isMobileXS =  ( (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= 360 ? true : false) || (((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= 360 ? true : false)) ;
+	var isMobileXS = function () {
+		return (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= mobileXSLowerBound ? true : false) ||
+			(((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= mobileXSLowerBound ? true : false);
+	};
 
 	// Display IFrame on WIndows Phone OS mobile devices
 	var isMobileIFrame = isWindowsMobileOs;
 
 	// For IOs/Android and small screen devices always open in new tab/window
-	var isMobileNewTab = !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS);
+	var isMobileNewTab = function () {
+		return !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS());
+	};
+
 	var tabWindow;
 
 	var redirectUrl;
@@ -409,7 +420,7 @@ var RealexHpp = (function () {
 				// check for iframe resize values
 				var evtdata;
 				if (event.data && (evtdata=JSON.parse(event.data)).iframe) {
-					if (!isMobileNewTab) {
+					if (!isMobileNewTab()) {
 						var iframeWidth = evtdata.iframe.width;
 						var iframeHeight = evtdata.iframe.height;
 
@@ -459,7 +470,7 @@ var RealexHpp = (function () {
 					}
 				} else {
 					var _close=function(){
-						if (isMobileNewTab && tabWindow) {
+						if (isMobileNewTab() && tabWindow) {
 							//Close the new window
 							tabWindow.close();
 						} else {
@@ -514,7 +525,7 @@ var RealexHpp = (function () {
 
 			return {
 				lightbox: function () {
-					if (isMobileNewTab) {
+					if (isMobileNewTab()) {
 						tabWindow = internal.openWindow(token);
 					} else {
 						overlayElement = internal.createOverlay();
@@ -724,6 +735,7 @@ var RealexHpp = (function () {
 			init: RxpRedirect.init
 		},
 		setHppUrl: setHppUrl,
+		setMobileXSLowerBound: setMobileXSLowerBound,
 		_internal: internal
 	};
 
