@@ -1,8 +1,18 @@
-/*! rxp-js - v1.3.1 - 2018-08-30
+/*! rxp-js - v1.4.0 - 2021-03-29
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
  */
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+};
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+};
 var RealexHpp = (function () {
 
 	'use strict';
@@ -15,20 +25,141 @@ var RealexHpp = (function () {
 		hppUrl = url;
 	};
 
+	var mobileXSLowerBound = 360;
+	var setMobileXSLowerBound = function (lowerBound) {
+		mobileXSLowerBound = lowerBound;
+	};
+
 	var isWindowsMobileOs = /Windows Phone|IEMobile/.test(navigator.userAgent);
 	var isAndroidOrIOs = /Android|iPad|iPhone|iPod/.test(navigator.userAgent);
-	var isMobileXS =  ( (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= 360 ? true : false) || (((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= 360 ? true : false)) ;
+	var isMobileXS = function () {
+		return (((window.innerWidth > 0) ? window.innerWidth : screen.width) <= mobileXSLowerBound ? true : false) ||
+			(((window.innerHeight > 0) ? window.innerHeight : screen.Height) <= mobileXSLowerBound ? true : false);
+	};
 
 	// Display IFrame on WIndows Phone OS mobile devices
 	var isMobileIFrame = isWindowsMobileOs;
 
 	// For IOs/Android and small screen devices always open in new tab/window
-	var isMobileNewTab = !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS);
+	var isMobileNewTab = function () {
+		return !isWindowsMobileOs && (isAndroidOrIOs || isMobileXS());
+	};
+
 	var tabWindow;
 
 	var redirectUrl;
 
 	var internal = {
+
+		base64:{
+			encode:function(input) {
+				var keyStr = "ABCDEFGHIJKLMNOP" +
+			   "QRSTUVWXYZabcdef" +
+			   "ghijklmnopqrstuv" +
+			   "wxyz0123456789+/" +
+			   "=";
+				input = escape(input);
+				var output = "";
+				var chr1, chr2, chr3 = "";
+				var enc1, enc2, enc3, enc4 = "";
+				var i = 0;
+
+				do {
+				   chr1 = input.charCodeAt(i++);
+				   chr2 = input.charCodeAt(i++);
+				   chr3 = input.charCodeAt(i++);
+
+				   enc1 = chr1 >> 2;
+				   enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+				   enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+				   enc4 = chr3 & 63;
+
+				   if (isNaN(chr2)) {
+					  enc3 = enc4 = 64;
+				   } else if (isNaN(chr3)) {
+					  enc4 = 64;
+				   }
+
+				   output = output +
+					  keyStr.charAt(enc1) +
+					  keyStr.charAt(enc2) +
+					  keyStr.charAt(enc3) +
+					  keyStr.charAt(enc4);
+				   chr1 = chr2 = chr3 = "";
+				   enc1 = enc2 = enc3 = enc4 = "";
+				} while (i < input.length);
+
+				return output;
+			},
+			decode:function(input) {
+				if(typeof input === 'undefined') {
+					return input;
+				}
+				var keyStr = "ABCDEFGHIJKLMNOP" +
+			   "QRSTUVWXYZabcdef" +
+			   "ghijklmnopqrstuv" +
+			   "wxyz0123456789+/" +
+			   "=";
+				var output = "";
+				var chr1, chr2, chr3 = "";
+				var enc1, enc2, enc3, enc4 = "";
+				var i = 0;
+
+				// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
+				var base64test = /[^A-Za-z0-9\+\/\=]/g;
+				if (base64test.exec(input)) {
+				   throw new Error("There were invalid base64 characters in the input text.\n" +
+						 "Valid base64 characters are A-Z, a-z, 0-9, '+', '/',and '='\n" +
+						 "Expect errors in decoding.");
+				}
+				input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+				do {
+				   enc1 = keyStr.indexOf(input.charAt(i++));
+				   enc2 = keyStr.indexOf(input.charAt(i++));
+				   enc3 = keyStr.indexOf(input.charAt(i++));
+				   enc4 = keyStr.indexOf(input.charAt(i++));
+
+				   chr1 = (enc1 << 2) | (enc2 >> 4);
+				   chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+				   chr3 = ((enc3 & 3) << 6) | enc4;
+
+				   output = output + String.fromCharCode(chr1);
+
+				   if (enc3 !== 64) {
+					  output = output + String.fromCharCode(chr2);
+				   }
+				   if (enc4 !== 64) {
+					  output = output + String.fromCharCode(chr3);
+				   }
+
+				   chr1 = chr2 = chr3 = "";
+				   enc1 = enc2 = enc3 = enc4 = "";
+
+				} while (i < input.length);
+
+				return unescape(output);
+			}
+		},
+		decodeAnswer:function(answer){ //internal.decodeAnswer
+
+			var _r;
+
+			try {
+				_r=JSON.parse(answer);
+			} catch (e) {
+				_r = { error: true, message: answer };
+			}
+
+			try {
+				for(var r in _r){
+					if(_r[r]) {
+						_r[r]=internal.base64.decode(_r[r]);
+					}
+				}
+			} catch (e) { /** */ }
+			return _r;
+		},
 		createFormHiddenInput: function (name, value) {
 			var el = document.createElement("input");
 			el.setAttribute("type", "hidden");
@@ -127,20 +258,20 @@ var RealexHpp = (function () {
 			var form = document.createElement("form");
 			form.setAttribute("method", "POST");
 			form.setAttribute("action", hppUrl);
-			
+
 			var versionSet = false;
-	
+
 			for (var key in token) {
 				if (key === "HPP_VERSION"){
 					versionSet = true;
 				}
 				form.appendChild(internal.createFormHiddenInput(key, token[key]));
 			}
-			
+
 			if (versionSet === false){
 				form.appendChild(internal.createFormHiddenInput("HPP_VERSION", "2"));
 			}
-			
+
 			if (ignorePostMessage) {
 				form.appendChild(internal.createFormHiddenInput("MERCHANT_RESPONSE_URL", redirectUrl));
 			} else {
@@ -295,12 +426,12 @@ var RealexHpp = (function () {
 				if (!internal.isMessageFromHpp(event.origin, hppUrl)) {
 					return;
 				}
-
 				// check for iframe resize values
-				if (event.data && JSON.parse(event.data).iframe) {
-					if (!isMobileNewTab) {
-						var iframeWidth = JSON.parse(event.data).iframe.width;
-						var iframeHeight = JSON.parse(event.data).iframe.height;
+				var evtdata;
+				if (event.data && (evtdata=internal.decodeAnswer(event.data)).iframe) {
+					if (!isMobileNewTab()) {
+						var iframeWidth = evtdata.iframe.width;
+						var iframeHeight = evtdata.iframe.height;
 
 						var iFrame;
 						var resized = false;
@@ -309,6 +440,9 @@ var RealexHpp = (function () {
 							iFrame = lightboxInstance.getIframe();
 						} else {
 							iFrame = document.getElementById("rxp-frame-" + randomId);
+						}
+						if(lightboxInstance.events && lightboxInstance.events.onResize) {
+							lightboxInstance.events.onResize(evtdata.iframe);
 						}
 
 						if (iframeWidth === "390px" && iframeHeight === "440px") {
@@ -344,25 +478,34 @@ var RealexHpp = (function () {
 						}
 					}
 				} else {
-					if (isMobileNewTab && tabWindow) {
-						//Close the new window
-						tabWindow.close();
-					} else {
-						//Close the lightbox
-						lightboxInstance.close();
-					}
+					var _close=function(){
+						if (isMobileNewTab() && tabWindow) {
+							//Close the new window
+							tabWindow.close();
+						} else {
+							//Close the lightbox
+							lightboxInstance.close();
+						}
+						var overlay=document.getElementById("rxp-overlay-" + randomId);
+						if(overlay) {
+							overlay.remove();
+						}
 
+					};
 					var response = event.data;
-
+					//allow the script to intercept the answer, instead of redirecting to another page. (which is really a 90s thing)
+					if(typeof merchantUrl==='function'){
+						var answer=internal.decodeAnswer(response);
+						merchantUrl(answer,_close);
+						return;
+					}
+					_close();
 					//Create a form and submit the hpp response to the merchant's response url
 					var form = document.createElement("form");
 					form.setAttribute("method", "POST");
 					form.setAttribute("action", merchantUrl);
-
 					form.appendChild(internal.createFormHiddenInput("hppResponse", response));
-
 					document.body.appendChild(form);
-
 					form.submit();
 				}
 			};
@@ -391,7 +534,7 @@ var RealexHpp = (function () {
 
 			return {
 				lightbox: function () {
-					if (isMobileNewTab) {
+					if (isMobileNewTab()) {
 						tabWindow = internal.openWindow(token);
 					} else {
 						overlayElement = internal.createOverlay();
@@ -427,8 +570,12 @@ var RealexHpp = (function () {
 				//Get the lightbox instance (it's a singleton) and set the sdk json
 				var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
 
+				//if you want the form to load on function call, set to autoload
+				if(idOfLightboxButton==='autoload'){
+					lightboxInstance.lightbox();
+				}
 				// Sets the event listener on the PAY button. The click will invoke the lightbox method
-				if (document.getElementById(idOfLightboxButton).addEventListener) {
+				else if (document.getElementById(idOfLightboxButton).addEventListener) {
 					document.getElementById(idOfLightboxButton).addEventListener("click", lightboxInstance.lightbox, true);
 				} else {
 					document.getElementById(idOfLightboxButton).attachEvent('onclick', lightboxInstance.lightbox);
@@ -492,17 +639,20 @@ var RealexHpp = (function () {
 
 				//Set the hpp token
 				instance.setToken(hppToken);
-
 				return instance;
 			},
-			init: function (idOfEmbeddedButton, idOfTargetIframe, merchantUrl, serverSdkJson) {
+			init: function (idOfEmbeddedButton, idOfTargetIframe, merchantUrl, serverSdkJson,events) {
 				//Get the embedded instance (it's a singleton) and set the sdk json
 				var embeddedInstance = RxpEmbedded.getInstance(serverSdkJson);
+				embeddedInstance.events=events;
 
 				embeddedInstance.setIframe(idOfTargetIframe);
-
+				//if you want the form to load on function call, set to autoload
+				if(idOfEmbeddedButton==='autoload'){
+					embeddedInstance.embedded();
+				}
 				// Sets the event listener on the PAY button. The click will invoke the embedded method
-				if (document.getElementById(idOfEmbeddedButton).addEventListener) {
+				else if (document.getElementById(idOfEmbeddedButton).addEventListener) {
 					document.getElementById(idOfEmbeddedButton).addEventListener("click", embeddedInstance.embedded, true);
 				} else {
 					document.getElementById(idOfEmbeddedButton).attachEvent('onclick', embeddedInstance.embedded);
@@ -594,11 +744,11 @@ var RealexHpp = (function () {
 			init: RxpRedirect.init
 		},
 		setHppUrl: setHppUrl,
+		setMobileXSLowerBound: setMobileXSLowerBound,
 		_internal: internal
 	};
 
 }());
-
 var RealexRemote = (function() {
 
     'use strict';
