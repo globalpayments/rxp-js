@@ -1,4 +1,4 @@
-/*! rxp-js - v1.4.0 - 2021-05-18
+/*! rxp-js - v1.5.0 - 2021-07-27
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -367,15 +367,18 @@ var RealexHpp = (function () {
 				iFrame.style.transform = "scale(1)";
 				iFrame.style.backgroundColor = "#ffffff";
 
-				if (spinner.parentNode) {
+				if (spinner && spinner.parentNode) {
 					spinner.parentNode.removeChild(spinner);
 				}
 
 				closeButton = internal.createCloseButton();
-				overlayElement.appendChild(closeButton);
-				closeButton.addEventListener("click", function () {
-					internal.closeModal(closeButton, iFrame, spinner, overlayElement);
-				}, true);
+
+				if (overlayElement && closeButton) {
+					overlayElement.appendChild(closeButton);
+					closeButton.addEventListener("click", function () {
+						internal.closeModal(closeButton, iFrame, spinner, overlayElement);
+					}, true);
+				}
 			};
 
 			var form = internal.createForm(document, token);
