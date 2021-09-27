@@ -4,3 +4,4 @@ package-lock.json
 .DS_Store
 _SpecRunner.html
 .grunt/
+.idea/
