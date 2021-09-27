@@ -1,10 +1,12 @@
-/*! rxp-js - v1.5.0 - 2021-07-27
+/*! rxp-js - v1.5.1 - 2021-09-27
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
  */
 Element.prototype.remove = function() {
-    this.parentElement.removeChild(this);
+	if (this.parentElement) {
+		this.parentElement.removeChild(this);
+	}
 };
 NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
     for(var i = this.length - 1; i >= 0; i--) {
