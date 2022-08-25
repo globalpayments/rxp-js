@@ -12,7 +12,7 @@
             $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
                 RealexHpp.lightbox.init(
                     "payButtonId",
-                    "https://dev.rlxcarts.com/mobileSDKsV2/response.php", // merchant url
+                    "/examples/hpp/response.php", // merchant url
                     jsonFromServerSdk   //form data
                 );
                 $('body').addClass('loaded');

@@ -1,4 +1,4 @@
-/*! rxp-js - v1.5.0 - 2021-07-27
+/*! rxp-js - v1.5.1 - 2021-09-07
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -49,8 +49,16 @@ var RealexHpp = (function () {
 
 	var redirectUrl;
 
+	/**
+	 * Shared functionality across lightbox, embedded, and redirect display modes.
+	 */
 	var internal = {
 		evtMsg: [],
+		/**
+		 * Adds a new window message event listener and tracks it for later removal
+		 *
+		 * @param {Function} evtMsgFct
+		 */
 		addEvtMsgListener: function(evtMsgFct) {
 			this.evtMsg.push({ fct: evtMsgFct, opt: false });
 			if (window.addEventListener) {
@@ -59,6 +67,9 @@ var RealexHpp = (function () {
 				window.attachEvent('message', evtMsgFct);
 			}
 		},
+		/**
+		 * Removes a previously set window message event listener
+		 */
 		removeOldEvtMsgListener: function () {
 			if (this.evtMsg.length > 0) {
 				var evt = this.evtMsg.pop();
@@ -69,6 +80,9 @@ var RealexHpp = (function () {
 				}
 			}
         },
+		/**
+		 * Shimmed base64 encode/decode support
+		 */
 		base64:{
 			encode:function(input) {
 				var keyStr = "ABCDEFGHIJKLMNOP" +
@@ -159,9 +173,25 @@ var RealexHpp = (function () {
 				return unescape(output);
 			}
 		},
+		/**
+		 * Converts an HPP message to a developer-friendly version.
+		 *
+		 * The decode process has two steps:
+		 *
+		 * 1. Attempt to parse the string as JSON. If this fails, an error response
+		 *    is provided as we expect that the HPP has errored out to the cardholder
+		 * 2. Attempt to base64 decode the data to cover both HPP versions 1 and 2.
+		 *
+		 * @param {any} answer
+		 * @returns null if answer is not a string, otherwise the data from the HPP
+		 */
 		decodeAnswer:function(answer){ //internal.decodeAnswer
 
 			var _r;
+
+			if (typeof answer !== "string") {
+				return null;
+			}
 
 			try {
 				_r=JSON.parse(answer);
@@ -178,6 +208,13 @@ var RealexHpp = (function () {
 			} catch (e) { /** */ }
 			return _r;
 		},
+		/**
+		 * Creates a new input of type `hidden`. Does not append to DOM.
+		 *
+		 * @param {string} name Name for the new input
+		 * @param {string} value Value for the new input
+		 * @returns the created input
+		 */
 		createFormHiddenInput: function (name, value) {
 			var el = document.createElement("input");
 			el.setAttribute("type", "hidden");
@@ -186,6 +223,11 @@ var RealexHpp = (function () {
 			return el;
 		},
 
+		/**
+		 * Determines a mobile device's orientation for width calculation
+		 *
+		 * @returns true if in landscape
+		 */
 		checkDevicesOrientation: function () {
 			if (window.orientation === 90 || window.orientation === -90) {
 				return true;
@@ -194,6 +236,12 @@ var RealexHpp = (function () {
 			}
 		},
 
+		/**
+		 * Creates a semi-transparent overlay with full width/height to serve as
+		 * a background for the lightbox modal
+		 *
+		 * @returns the created overlay
+		 */
 		createOverlay: function () {
 			var overlay = document.createElement("div");
 			overlay.setAttribute("id", "rxp-overlay-" + randomId);
@@ -221,6 +269,14 @@ var RealexHpp = (function () {
 			return overlay;
 		},
 
+		/**
+		 * Closes a lightbox modal and all associated elements
+		 *
+		 * @param {HTMLImageElement} closeButton
+		 * @param {HTMLIFrameElement} iFrame
+		 * @param {HTMLImageElement} spinner
+		 * @param {HTMLDivElement} overlayElement
+		 */
 		closeModal: function (closeButton, iFrame, spinner, overlayElement) {
 			if (closeButton && closeButton.parentNode) {
 				closeButton.parentNode.removeChild(closeButton);
@@ -246,6 +302,11 @@ var RealexHpp = (function () {
 			}, 300);
 		},
 
+		/**
+		 * Creates a close button for the lightbox modal
+		 *
+		 * @returns the created element
+		 */
 		createCloseButton: function (overlayElement) {
 			if (document.getElementById("rxp-frame-close-" + randomId) !== null) {
 				return;
@@ -272,6 +333,19 @@ var RealexHpp = (function () {
 			return closeButton;
 		},
 
+		/**
+		 * Creates a form and appends the HPP request data as hidden input elements to
+		 * POST to the defined HPP URL.
+		 *
+		 * The created form is not appended to the DOM and is not submitted at this time.
+		 *
+		 * @param {Document} doc
+		 * @param {object} token HPP request data
+		 * @param {bool} ignorePostMessage If true, the HPP will redirect to the defined
+		 * 					defined redirect URL. If false, the HPP will send a postMessage
+		 * 					to the parent window to be handled by this library.
+		 * @returns the created form
+		 */
 		createForm: function (doc, token, ignorePostMessage) {
 			var form = document.createElement("form");
 			form.setAttribute("method", "POST");
@@ -302,6 +376,12 @@ var RealexHpp = (function () {
 			return form;
 		},
 
+		/**
+		 * Creates a visual spinner element to be shown with the lightbox overlay while the
+		 * HPP's iframe loads
+		 *
+		 * @returns the created spinner element
+		 */
 		createSpinner: function () {
 			var spinner = document.createElement("img");
 			spinner.setAttribute("src", "data:image/gif;base64,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");
@@ -317,6 +397,14 @@ var RealexHpp = (function () {
 			return spinner;
 		},
 
+		/**
+		 * Creates the HPP's form, spinner, iframe, and close button, appends them
+		 * to the DOM, and submits the form to load the HPP
+		 *
+		 * @param {HTMLDivElement} overlayElement
+		 * @param {object} token The HPP request data
+		 * @returns an object with the created spinner, iframe, and close button
+		 */
 		createIFrame: function (overlayElement, token) {
 			//Create the spinner
 			var spinner = internal.createSpinner();
@@ -397,6 +485,18 @@ var RealexHpp = (function () {
 			};
 		},
 
+		/**
+		 * Opens the HPP in a new window
+		 *
+		 * Used in some mobile scenarios or when the browser viewport is
+		 * smaller than the HPP's inner width.
+		 *
+		 * Will automatically post the request data to the defined HPP
+		 * URL to load the HPP.
+		 *
+		 * @param {object} token The HPP request data
+		 * @returns the created window
+		 */
 		openWindow: function (token) {
 			//open new window
 			var tabWindow = window.open();
@@ -427,28 +527,71 @@ var RealexHpp = (function () {
 			return tabWindow;
 		},
 
+		/**
+		 * Creates a rudimentary URL parser using an anchor element
+		 *
+		 * @param {string} url
+		 * @returns the created anchor element
+		 */
 		getUrlParser: function (url) {
 			var parser = document.createElement('a');
 			parser.href = url;
 			return parser;
 		},
 
+		/**
+		 * Gets the hostname/origin from a URL. Used for origin checks
+		 *
+		 * @param {string} url
+		 * @returns the hostname/origin of the URL
+		 */
 		getHostnameFromUrl: function (url) {
-      return internal.getUrlParser(url).hostname;
+			return internal.getUrlParser(url).hostname;
 		},
 
+		/**
+		 * Compares the origins from both arguments to validate we have received a postMessage
+		 * from the expected source
+		 *
+		 * @param {string} origin The origin attached to the recieved message
+		 * @param {string} hppUrl Our expected source origin
+		 * @returns true if the origins match
+		 */
 		isMessageFromHpp: function (origin, hppUrl) {
 			return internal.getHostnameFromUrl(origin) === internal.getHostnameFromUrl(hppUrl);
 		},
 
+		/**
+		 * Handles messages from the HPP
+		 *
+		 * Messages from the HPP are one of:
+		 *
+		 * - iframe resize event
+		 * - transaction response
+		 * - error information
+		 *
+		 * @param {MessageEvent} e
+		 */
 		receiveMessage: function (e) {
 			//Check the origin of the response comes from HPP
 			if (!internal.isMessageFromHpp(e.event.origin, hppUrl)) {
 				return;
 			}
+
+			if (!e.event.data) {
+				return;
+			}
+
+			var evtdata = internal.decodeAnswer(e.event.data);
+
+			// we received an invalid message from the HPP iframe (e.g. from a browser plugin)
+			// return early to prevent invalid processing
+			if (evtdata === null) {
+				return;
+			}
+
 			// check for iframe resize values
-			var evtdata;
-			if (e.event.data && (evtdata=internal.decodeAnswer(e.event.data)).iframe) {
+			if (evtdata.iframe) {
 				if (!isMobileNewTab()) {
 					var iframeWidth = evtdata.iframe.width;
 					var iframeHeight = evtdata.iframe.height;
@@ -514,9 +657,8 @@ var RealexHpp = (function () {
 				};
 				var response = e.event.data;
 				//allow the script to intercept the answer, instead of redirecting to another page. (which is really a 90s thing)
-				if(typeof e.url==='function'){
-					var answer=internal.decodeAnswer(response);
-					e.url(answer,_close);
+				if (typeof e.url === 'function'){
+					e.url(evtdata, _close);
 					return;
 				}
 				_close();
@@ -531,7 +673,9 @@ var RealexHpp = (function () {
 		}
 	};
 
-	// Initialising some variables used throughout this file.
+	/**
+	 * Public interface for the lightbox display mode
+	 */
 	var RxpLightbox = (function () {
 		var instance;
 
@@ -610,7 +754,9 @@ var RealexHpp = (function () {
 		};
 	})();
 
-	// Initialising some variables used throughout this file.
+	/**
+	 * Public interface for the embedded display mode
+	 */
 	var RxpEmbedded = (function () {
 		var instance;
 
@@ -689,6 +835,9 @@ var RealexHpp = (function () {
 		};
 	})();
 
+	/**
+	 * Public interface for the redirect display mode
+	 */
 	var RxpRedirect = (function () {
 		var instance;
 
@@ -755,7 +904,9 @@ var RealexHpp = (function () {
 		};
 	}());
 
-	// RealexHpp
+	/**
+	 * Public interface for the Realex HPP library
+	 */
 	return {
 		init: RxpLightbox.init,
 		lightbox: {
