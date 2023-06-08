@@ -13,7 +13,7 @@
     <script src="./../../dist/rxp-js.js"></script>
     <script src="./helper.js"></script>
     <script>
-        RealexHpp.setHppUrl('https://apis.sandbox.globalpay.com/ucp/hpp/transactions');
+        RealexHpp.setHppUrl('https://pay.sandbox.realexpayments.com/pay');
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
             $.getJSON("./proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
