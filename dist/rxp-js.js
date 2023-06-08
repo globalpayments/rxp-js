@@ -1,4 +1,4 @@
-/*! rxp-js - v1.5.1 - 2021-09-07
+/*! rxp-js - v1.5.2 - 2023-06-08
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -18,6 +18,11 @@ var RealexHpp = (function () {
 	'use strict';
 
 	var hppUrl = "https://pay.realexpayments.com/pay";
+
+	var allowedHppUrls = [
+		'https://pay.realexpayments.com/pay',
+		'https://pay.sandbox.realexpayments.com/pay'
+	];
 
 	var randomId = randomId || Math.random().toString(16).substr(2,8);
 
@@ -550,6 +555,23 @@ var RealexHpp = (function () {
 		},
 
 		/**
+		 * Checks if the origin is HPP.
+		 *
+		 * @param {string} origin
+		 * @returns {boolean}
+		 */
+		isHppOrigin: function(origin) {
+			var result = false;
+			allowedHppUrls.forEach(function (url) {
+				if (internal.getHostnameFromUrl(url) === origin) {
+					result = true;
+				}
+			});
+
+			return result;
+		},
+
+		/**
 		 * Compares the origins from both arguments to validate we have received a postMessage
 		 * from the expected source
 		 *
@@ -558,7 +580,8 @@ var RealexHpp = (function () {
 		 * @returns true if the origins match
 		 */
 		isMessageFromHpp: function (origin, hppUrl) {
-			return internal.getHostnameFromUrl(origin) === internal.getHostnameFromUrl(hppUrl);
+			var originHostName = internal.getHostnameFromUrl(origin);
+			return originHostName === internal.getHostnameFromUrl(hppUrl) || internal.isHppOrigin(originHostName);
 		},
 
 		/**
