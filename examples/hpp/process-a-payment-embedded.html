@@ -20,12 +20,7 @@
                     "payButtonId",
                     "targetIframe",
                     "./response.php",   // merchant url
-                    jsonFromServerSdk,  // form data
-                    {   // options
-                        onResize:function(data) {
-							// $('#targetIframe').css(data)
-                        }
-                    }
+                    jsonFromServerSdk  // form data
                 );
                 $('body').addClass('loaded');
             });
