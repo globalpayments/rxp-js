@@ -3,36 +3,38 @@
 <head>
     <title>HPP embed Demo</title>
     <meta charset="UTF-8">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="/dist/rxp-js.js"></script>
+    <style>
+        #targetIframe {
+            min-height: 600px;
+            min-width: 350px;
+        }
+    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="./../../dist/rxp-js.js"></script>
+    <script src="./helper.js"></script>
     <script>
         RealexHpp.setHppUrl('https://pay.sandbox.realexpayments.com/pay');
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
-            $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
+            $.getJSON("./proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
                 RealexHpp.embedded.init(
                     "autoload",
                     "targetIframe",
-                    function(answer,close){
-						console.log('embed answer',answer)
+                    function (answer, close) {
+						console.log('embed answer: ', answer)
 						close();
-						if(answer.AUTHCODE){
+						if (answer.AUTHCODE) {
                             $('.paymentResult').html('<div class="alert alert-success">All set!</div>');
 							//success
 							success(answer);
 						}
-						else{
+						else {
 							//error
                             $('.paymentResult').html('<div class="alert alert-danger">'+answer.MESSAGE+'</div>');
                             //would you retry? This part should be handled at the rxp side, stay in the modal/iframe... TODO
 						}
 					},
-                    jsonFromServerSdk,
-                    {
-                        onResize:function(data){
-							$('#targetIframe').css(data)
-                        }
-                    }
+                    jsonFromServerSdk
                 );
                 $('body').addClass('loaded');
             });

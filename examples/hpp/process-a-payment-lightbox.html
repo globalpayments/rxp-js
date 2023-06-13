@@ -3,16 +3,17 @@
 <head>
     <title>HPP Lightbox Demo</title>
     <meta charset="UTF-8">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="/dist/rxp-js.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="./../../dist/rxp-js.js"></script>
+    <script src="./helper.js"></script>
     <script>
         RealexHpp.setHppUrl('https://pay.sandbox.realexpayments.com/pay');
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
-            $.getJSON("/examples/hpp/proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
+            $.getJSON("./proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {
                 RealexHpp.lightbox.init(
                     "payButtonId",
-                    "/examples/hpp/response.php", // merchant url
+                    "./response.php", // merchant url
                     jsonFromServerSdk   //form data
                 );
                 $('body').addClass('loaded');
@@ -21,6 +22,13 @@
     </script>
 </head>
 <body>
+    <div class="method">
+        <label for="paymentMethod">Payment Method: </label>
+        <select name="paymentMethod" id="paymentMethod">
+            <option value="https://pay.sandbox.realexpayments.com/pay">Ecommerce</option>
+            <option value="https://apis.sandbox.globalpay.com/ucp/hpp/transactions">Unified Payments</option>
+        </select>
+    </div>
     <input type="submit" id="payButtonId" value="Checkout Now" />
 </body>
 </html>
