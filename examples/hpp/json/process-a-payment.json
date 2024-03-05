@@ -1,10 +1,9 @@
 {
   "MERCHANT_ID": "heartlandgpsandbox",
-  "ACCOUNT": "3dsecure",
-  "AMOUNT": "1001",
+  "ACCOUNT": "hpp",
+  "AMOUNT": "1000",
   "CURRENCY": "EUR",
   "AUTO_SETTLE_FLAG": "1",
-  "PM_METHODS": "cards",
 
   "HPP_CUSTOMER_EMAIL": "test@example.com",
   "HPP_CUSTOMER_PHONENUMBER_MOBILE": "44|789456123",

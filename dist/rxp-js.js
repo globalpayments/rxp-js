@@ -1,4 +1,4 @@
-/*! rxp-js - v1.5.2 - 2023-06-08
+/*! rxp-js - v1.5.3 - 2024-03-04
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -423,6 +423,7 @@ var RealexHpp = (function () {
 			iFrame.setAttribute("frameBorder", "0");
 			iFrame.setAttribute("width", "360px");
 			iFrame.setAttribute("seamless", "seamless");
+			iFrame.setAttribute("allow", "payment " + internal.getBaseUrl(hppUrl));
 
 			iFrame.style.zIndex = "10001";
 			iFrame.style.position = "absolute";
@@ -552,6 +553,17 @@ var RealexHpp = (function () {
 		 */
 		getHostnameFromUrl: function (url) {
 			return internal.getUrlParser(url).hostname;
+		},
+
+		/**
+		 * Gets the base URL from a URL. Used to set the 'allow payment' attribute.
+		 *
+		 * @param {string} url
+		 * @returns the base URL of the provided URL
+		 */
+		getBaseUrl: function (url) {
+			var urlParser = internal.getUrlParser(url);
+			return urlParser.protocol + '//' + urlParser.hostname;
 		},
 
 		/**
