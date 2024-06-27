@@ -1,4 +1,4 @@
-/*! rxp-js - v1.5.3 - 2024-03-04
+/*! rxp-js - v1.5.4 - 2024-07-02
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -823,6 +823,9 @@ var RealexHpp = (function () {
 				},
 				setIframe: function (iframeId) {
 					iFrame = document.getElementById(iframeId);
+					if (iFrame) {
+						iFrame.setAttribute("allow", "payment " + internal.getBaseUrl(hppUrl));
+					}
 				},
 				getIframe: function () {
 					return iFrame;

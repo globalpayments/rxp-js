@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v1.5.3 (03/04/24)
+## Latest Version - v1.5.4 (07/02/24)
+#### Enhancements:
+- Allow digital wallets payments when the mode is set to embedded
+
+## v1.5.3 (03/04/24)
 #### Enhancements:
 - Allow digital wallets payments when the mode is set to lightbox
 
