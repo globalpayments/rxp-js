@@ -15,19 +15,19 @@
                 RealexHpp.lightbox.init(
                     'payButtonId',
                     function (answer, close) {
-						console.log('embed answer: ', answer)
-						close();
-						if (answer.AUTHCODE){
+                        console.log('embed answer: ', answer)
+                        close();
+                        if (answer.AUTHCODE) {
                             $('.paymentResult').html('<div class="alert alert-success">All set!</div>');
-							//success
-							success(answer);
-						}
-						else {
-							//error
+                            //success
+                            success(answer);
+                        }
+                        else {
+                            //error
                             $('.paymentResult').html('<div class="alert alert-danger">'+answer.MESSAGE+'</div>');
                             //would you retry? This part should be handled at the rxp side, stay in the modal/iframe... TODO
-						}
-					},
+                        }
+                    },
                     jsonFromServerSdk   //form data
                 );
                 $('body').addClass('loaded');

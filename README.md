@@ -16,6 +16,15 @@ RealexHpp.init(payButtonId, merchantUrl, jsonFromServerSdk[, options]);
 * options/events
     - onResize (iframe embed) Send resize iframe events so the parent frame can be adjusted
 
+### Enable the logger
+The following code enables a logger that will emit an event on each step performed by the library. Should be used for debugging only.
+```javascript
+RealexHpp.setConfigItem('enableLogging', true);
+window.addEventListener(RealexHpp.constants.logEventName, function(e) {
+    console.log(e.detail);
+});
+```
+
 ### Consuming the resulting POST
 Once the payment has completed the Realex JSON response will be posted within to the supplied merchantUrl. The name of the field containing the JSON response is hppResponse.
 
