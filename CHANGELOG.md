@@ -4,7 +4,10 @@
 
 # Changelog
 
-## Latest Version - v1.5.4 (07/02/24)
+## Latest Version - v1.5.5 (10/15/24)
+- Added a logger for the steps performed by the library
+
+## v1.5.4 (07/02/24)
 #### Enhancements:
 - Allow digital wallets payments when the mode is set to embedded
 

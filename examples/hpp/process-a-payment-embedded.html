@@ -13,6 +13,13 @@
     <script src="./../../dist/rxp-js.js"></script>
     <script>
         RealexHpp.setHppUrl('https://pay.sandbox.realexpayments.com/pay');
+
+        // Enable the logger. Should be used for debugging only.
+        RealexHpp.setConfigItem('enableLogging', true);
+        window.addEventListener(RealexHpp.constants.logEventName, function(e) {
+            console.log(e.detail);
+        });
+
         // get the HPP JSON from the server-side SDK
         $(document).ready(function () {
             $.getJSON("./proxy-request.php?slug=process-a-payment", function (jsonFromServerSdk) {

@@ -1,4 +1,4 @@
-/*! rxp-js - v1.5.4 - 2024-07-02
+/*! rxp-js - v1.5.5 - 2024-10-15
  * The official Realex Payments JS Library
  * https://github.com/realexpayments/rxp-js
  * Licensed MIT
@@ -33,6 +33,41 @@ var RealexHpp = (function () {
 	var mobileXSLowerBound = 360;
 	var setMobileXSLowerBound = function (lowerBound) {
 		mobileXSLowerBound = lowerBound;
+	};
+
+	var config = {
+		enableLogging: false
+	};
+	var setConfigItem = function(configItem, value) {
+		if (!config.hasOwnProperty(configItem)) {
+			return;
+		}
+		config[configItem] = value;
+	};
+	var constants = {
+		logEventName: 'rxp-log'
+	};
+	var eventMessages = {
+		form: {
+			append: 'Form appended to the iframe',
+			create: 'Hidden form created',
+			submit: 'Form submitted'
+		},
+		iFrame: {
+			create: 'iFrame created',
+			find: 'iFrame found'
+		},
+		initialize: function(mode) {
+			return mode + ' initialized';
+		}
+	}
+	var logEvent = function(message, data = {}) {
+		if (!config.enableLogging) {
+			return;
+		}
+
+		var event = new CustomEvent(constants.logEventName, { detail: { message: message, data: data } });
+		window.dispatchEvent(event);
 	};
 
 	var isWindowsMobileOs = /Windows Phone|IEMobile/.test(navigator.userAgent);
@@ -454,6 +489,8 @@ var RealexHpp = (function () {
 				iFrame.style.marginLeft = "-180px";
 			}
 
+			logEvent(eventMessages.iFrame.create, { iFrame: iFrame });
+
 			var closeButton;
 
 			iFrame.onload = function () {
@@ -476,13 +513,17 @@ var RealexHpp = (function () {
 			};
 
 			var form = internal.createForm(document, token);
+			logEvent(eventMessages.form.create, { form: form });
 			if (iFrame.contentWindow.document.body) {
 				iFrame.contentWindow.document.body.appendChild(form);
+				logEvent(eventMessages.form.append);
 			} else {
 				iFrame.contentWindow.document.appendChild(form);
+				logEvent(eventMessages.form.append);
 			}
 
 			form.submit();
+			logEvent(eventMessages.form.submit);
 
 			return {
 				spinner: spinner,
@@ -765,11 +806,12 @@ var RealexHpp = (function () {
 				return instance;
 			},
 			init: function (idOfLightboxButton, merchantUrl, serverSdkJson) {
+				logEvent(eventMessages.initialize('RxpLightbox'));
 				//Get the lightbox instance (it's a singleton) and set the sdk json
 				var lightboxInstance = RxpLightbox.getInstance(serverSdkJson);
 
 				//if you want the form to load on function call, set to autoload
-				if(idOfLightboxButton==='autoload'){
+				if (idOfLightboxButton === 'autoload') {
 					lightboxInstance.lightbox();
 				}
 				// Sets the event listener on the PAY button. The click will invoke the lightbox method
@@ -805,13 +847,18 @@ var RealexHpp = (function () {
 			return {
 				embedded: function () {
 					var form = internal.createForm(document, token);
+					logEvent(eventMessages.form.create, { form: form });
 					if (iFrame) {
+						logEvent(eventMessages.iFrame.find, { iFrame: iFrame });
 						if (iFrame.contentWindow.document.body) {
 							iFrame.contentWindow.document.body.appendChild(form);
+							logEvent(eventMessages.form.append);
 						} else {
 							iFrame.contentWindow.document.appendChild(form);
+							logEvent(eventMessages.form.append);
 						}
 						form.submit();
+						logEvent(eventMessages.form.submit);
 						iFrame.style.display = "inherit";
 					}
 				},
@@ -846,13 +893,15 @@ var RealexHpp = (function () {
 				return instance;
 			},
 			init: function (idOfEmbeddedButton, idOfTargetIframe, merchantUrl, serverSdkJson,events) {
+				logEvent(eventMessages.initialize('RxpEmbedded'));
+
 				//Get the embedded instance (it's a singleton) and set the sdk json
 				var embeddedInstance = RxpEmbedded.getInstance(serverSdkJson);
 				embeddedInstance.events=events;
 
 				embeddedInstance.setIframe(idOfTargetIframe);
 				//if you want the form to load on function call, set to autoload
-				if(idOfEmbeddedButton==='autoload'){
+				if (idOfEmbeddedButton === 'autoload') {
 					embeddedInstance.embedded();
 				}
 				// Sets the event listener on the PAY button. The click will invoke the embedded method
@@ -898,8 +947,10 @@ var RealexHpp = (function () {
 			return {
 				redirect: function () {
 					var form = internal.createForm(document, token, true);
+					logEvent(eventMessages.form.create, { form: form });
 					document.body.append(form);
 					form.submit();
+					logEvent(eventMessages.form.submit);
 				},
 				setToken: function (hppToken) {
 					token = hppToken;
@@ -920,6 +971,8 @@ var RealexHpp = (function () {
 				return instance;
 			},
 			init: function (idOfButton, merchantUrl, serverSdkJson) {
+				logEvent(eventMessages.initialize('RxpRedirect'));
+
 				// Get the redirect instance (it's a singleton) and set the sdk json
 				var redirectInstance = RxpRedirect.getInstance(serverSdkJson);
 				redirectUrl = merchantUrl;
@@ -958,6 +1011,8 @@ var RealexHpp = (function () {
 		},
 		setHppUrl: setHppUrl,
 		setMobileXSLowerBound: setMobileXSLowerBound,
+		setConfigItem: setConfigItem,
+		constants: constants,
 		_internal: internal
 	};
 
